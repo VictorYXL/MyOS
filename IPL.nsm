@@ -7,7 +7,6 @@
 ;FAT12格式软盘专用代码，软盘大小为1440KB
 		JMP entry
 		DB 0x90
-		DB 0xeb,0x4e,0x90	
 		DB "MyOS IPL"			;启动区的名字，8字节
 		DW 512					;每个扇区大小
 		DB 1					;1个簇围1个扇区
@@ -25,7 +24,8 @@
 		DD 0xffffffff
 		DB "MyOS       "		;磁盘名，11字节
 		DB "FAT12   "			;磁盘格式名，8字节
-		RESB 18					;空出18个字节，自动填充18个0x00
+		TIMES 18 DB 0			;空出18个字节，自动填充18个0x00
+		
 
 ; 程序核心 用0x13中断读扇区
 entry:
@@ -65,7 +65,7 @@ fin:
 
 noError:
 		MOV AX,ES				;后移内存地址
-		ADD AX,00020			;每段对应16字节，一个扇区512字节=32段=0x0020ES
+		ADD AX,0x0020			;每段对应16字节，一个扇区512字节=32段=0x0020ES
 		MOV ES,AX
 		ADD CL,1
 		CMP CL,18				;每个磁头读取18个扇区
@@ -81,9 +81,7 @@ noError:
 		CMP CH,CYLS				;每个软盘10个柱面
 		JB readLoop
 		
-		
-		MOV SI,msgCorrect
-		JMP putloop
+		JMP loadOS
 error:
 		MOV SI,msgError
 		JMP putloop
@@ -91,24 +89,21 @@ putloop:
 		MOV	AL,[SI]				;[x]表示内存中地址为x的单元，将SI地址中一个字节赋值给AL（AX的低位）
 		ADD	SI,1				;SI自增
 		CMP	AL,0				;对比AL是否为0
-		JE fin					;是则转入fin
+		JE loadOS					;是则转入fin
 		;调用中断显示字符串
 		;AH=0x0e AL=字符编码 BH=0 BL=字符颜色
 		MOV	AH,0x0e			
 		MOV	BX,15			
 		INT	0x10				;调用中断显示文字
 		JMP putloop
-
+loadOS:
+		MOV		[0x0ff0],CH		;告诉操作系统，加载的结束地址
+		JMP		0xc200			;跳转到操作系统中  0xc200=0x8000+0x4200 磁盘加载到内存中的位置+程序相对磁盘头的便宜
 msgError:
 		DB 0x0a,0x0a,0x0a		
 		DB "load error"
 		DB 0x0a					
 		DB 0
-msgCorrect:
-		DB 0x0a,0x0a,0x0a		
-		DB "load successfully"
-		DB 0x0a	
-		DB 0
-		TIMES	510-($-$$) DB 0
-		DB		0x55, 0xaa
+		TIMES 510-($-$$) DB 0
+		DB 0x55, 0xaa
 

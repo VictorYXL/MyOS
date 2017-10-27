@@ -1,0 +1,26 @@
+;获取引导信息
+
+;记录信息的位置 0x0ff0 ~0x0ff8
+	CYLS EQU 0x0ff0				;设定启动区(在IPL.nsm中将装在区域的结束位置写入了0x0ff8中)
+	LEDS EQU 0x0ff1				;LED灯
+	VMODE EQU 0x0ff2			;颜色位数
+	SCRNX EQU 0x0ff4			;分辨率(x,y)
+	SCRNY EQU 0x0ff6	
+	VRAM EQU 0x0ff8				;图像缓冲区(保存显卡内容的地方)开始的位置
+	
+	ORG 0xc200			
+	MOV AL,0x13
+	MOV AH,0x00
+	INT 0x10
+	
+	MOV BYTE [VMODE],8			;8位颜色
+	MOV WORD [SCRNX],320		;分辨率320*200
+	MOV WORD [SCRNY],200
+	MOV DWORD [VRAM],0x000a0000	;缓冲区开始于该位置
+;获取LED灯的信息
+	MOV AH,0x02
+	INT 0x16
+	MOV [LEDS],AL
+fin:
+	HLT
+	JMP fin
