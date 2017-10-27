@@ -1,0 +1,114 @@
+;读取10个柱面，每个柱面两个磁头，每个柱面18个扇区
+;hello-os
+;TAB=4
+		CYLS EQU 10				;令CYLS为10，表示10个柱面
+		ORG	0x7c00				; 将程序装载到0x7c00处
+
+;FAT12格式软盘专用代码，软盘大小为1440KB
+		JMP entry
+		DB 0x90
+		DB 0xeb,0x4e,0x90	
+		DB "MyOS IPL"			;启动区的名字，8字节
+		DW 512					;每个扇区大小
+		DB 1					;1个簇围1个扇区
+		DW 1					;FAT文件配置表的起始位置
+		DB 2					;FAT个数 2
+		DW 224					;根目录大小 224
+		DW 2880	 				;该磁盘大小 2880*512B=1440KB
+		DB 0xf0					;磁盘种类
+		DW 9					;FAT长度 9扇区
+		DW 18 					;1个磁道18个扇区
+		DW 2					;2个磁头
+		DD 0					;不使用分区
+		DD 2880					;同上，磁盘大小
+		DB 0,0,0x29
+		DD 0xffffffff
+		DB "MyOS       "		;磁盘名，11字节
+		DB "FAT12   "			;磁盘格式名，8字节
+		RESB 18					;空出18个字节，自动填充18个0x00
+
+; 程序核心 用0x13中断读扇区
+entry:
+
+		MOV	AX,0			
+		MOV	SS,AX				;栈段寄存器归零
+		MOV	SP,0x7c00		
+		MOV	DS,AX				;段寄存器归零
+
+		MOV	AX,0x0820
+		MOV	ES,AX
+		MOV	CH,0			
+		MOV	DH,0			
+		MOV	CL,2			
+readLoop:
+		MOV		SI,0			; 失败次数
+
+retry:
+		MOV AH,0x02
+		MOV AL,1
+		MOV BX,0				;EX:BX=EX*16+BX 缓冲地址  磁盘读取的内容将被放置到该处内存
+		MOV DL,0x00
+		INT 0x13				;调用磁盘中断，返回FLAGS.CF (进位标识符 0 正确, 1 错误)
+		JNC noError				;JNC: FLAGS.CF为0则跳转(成功)
+		ADD SI,1				;失败次数+1
+		CMP SI,5				;失败是否到5次
+		JAE	error				;大于或等于时跳转
+		MOV AH,0x00
+		MOV DL,0x00
+		INT 0x13				;AH=0x00,AL=0x00 系统复位
+		JMP retry
+
+;等待
+fin:
+		HLT						; 等待外部动作，如鼠标或者键盘事件
+		JMP fin
+
+noError:
+		MOV AX,ES				;后移内存地址
+		ADD AX,00020			;每段对应16字节，一个扇区512字节=32段=0x0020ES
+		MOV ES,AX
+		ADD CL,1
+		CMP CL,18				;每个磁头读取18个扇区
+		JBE readLoop
+		
+		MOV CL,1
+		ADD DH,1
+		CMP DH,2
+		JB readLoop				;每个柱面两个磁头
+		
+		MOV DH,0
+		ADD CH,1
+		CMP CH,CYLS				;每个软盘10个柱面
+		JB readLoop
+		
+		
+		MOV SI,msgCorrect
+		JMP putloop
+error:
+		MOV SI,msgError
+		JMP putloop
+putloop:
+		MOV	AL,[SI]				;[x]表示内存中地址为x的单元，将SI地址中一个字节赋值给AL（AX的低位）
+		ADD	SI,1				;SI自增
+		CMP	AL,0				;对比AL是否为0
+		JE fin					;是则转入fin
+		;调用中断显示字符串
+		;AH=0x0e AL=字符编码 BH=0 BL=字符颜色
+		MOV	AH,0x0e			
+		MOV	BX,15			
+		INT	0x10				;调用中断显示文字
+		JMP putloop
+
+msgError:
+		DB 0x0a,0x0a,0x0a		
+		DB "load error"
+		DB 0x0a					
+		DB 0
+msgCorrect:
+		DB 0x0a,0x0a,0x0a		
+		DB "load successfully"
+		DB 0x0a	
+		DB 0
+		TIMES	510-($-$$) DB 0
+		DB		0x55, 0xaa
+
