@@ -17,6 +17,8 @@ struct Task
 {
 	int sel,flags;
 	struct TSS tss;	
+	struct BufferAll bufAll;
+	int winID;
 };
 struct TaskCTL
 {
@@ -31,8 +33,8 @@ extern struct Timer *taskTimer;
 
 struct Task *getMainTask();
 struct Task *allocTask();
-void initTask();
-
+void initTaskCTL();
+void initTask(struct Task *task,int eip,int winID);//,unsigned char *keyb,unsigned char *mouseb);
 void runTask(struct Task *task);
 struct Task *getMainTask(); 
 void switchTask();

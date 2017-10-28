@@ -2,7 +2,7 @@
 #include"mouse.h"
 #include"nasmfunc.h"
 #include"buffer.h"
-
+struct Mouse_Dec mdec;
 //º§ªÓ Û±Í
 void enable_mouse(struct Mouse_Dec *mdec)
 {

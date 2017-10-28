@@ -1,20 +1,16 @@
-#include"mtask.h"
-#include"buffer.h"
-#include"int.h"
 #include"nasmfunc.h"
-#include"dsctbl.h"  
-#include"keyboard.h"
-#include"mouse.h"
 #include"memory.h"
 #include"sheet.h"
 #include"graphic.h"
-#include"main.h"
-#include"sheet.h"
+#include"dsctbl.h"  
+#include"buffer.h"
 #include"timer.h" 
+#include"keyboard.h"
+#include"mouse.h"
+#include"mtask.h"
+#include"int.h"
+#include"main.h"
 #include<stdio.h>
-
-
-
 void HariMain()
 {	
 	//中断初始化 
@@ -24,13 +20,13 @@ void HariMain()
 	io_out8(PIC0_IMR, 0xf8);//允许PIC中断与键盘中断
 	io_out8(PIC1_IMR, 0xef);//允许鼠标中断
 	
-	//初始化鼠标、键盘、定时器缓冲区 
+	//初始化鼠标、键盘、定时器缓冲区（主任务键鼠缓冲区定义在栈中，子任务缓冲定义在堆中） 
 	unsigned char data;
 	unsigned char keyb[32],mouseb[1024],timeb[8];
 	struct Buffer timeBuffer;
-	initBuffer(&allbuf.key,32,keyb,0);
-	initBuffer(&allbuf.mouse,1024,mouseb,0);
-	initBuffer(&timeBuffer,8,timeb,0);
+	initBuffer(&allBuf.key,32,keyb);
+	initBuffer(&allBuf.mouse,1024,mouseb);
+	initBuffer(&timeBuffer,8,timeb);
 	
 	//定时器初始化
 	initPit();
@@ -49,7 +45,6 @@ void HariMain()
 	//鼠标->鼠标控制电路->CPU
 	//先初始化鼠标控制电路（隐藏在键盘控制电路里）
 	//再激活鼠标
-	struct Mouse_Dec mdec;
 	mdec.x=100;
 	mdec.y=100;
 	init_keyboard();//先初始化键盘控制电路
@@ -68,17 +63,27 @@ void HariMain()
 	freeMem(0x00400000,size-0x00400000);
 	
 	//初始化键盘数据
-	static char keyTable[0x80] =
+	char keyTable[0x160]=
 	{
- 		 0 , 0 ,'1','2','3','4','5','6','7','8','9','0','-','^', 0 , 0 ,
-		'Q','W','E','R','T','Y','U','I','O','P','[',']', 0 , 0 ,'A','S',
-		'D','F','G','H','J','K','L',';','\'','`', 0 ,'\\','Z','X','C','V',
-		'B','N','M',',','.','/', 0 ,'*', 0 ,' ', 0 , 0 , 0 , 0 , 0 , 0 ,
+		 0 , 0 ,'1','2','3','4','5','6','7','8','9','0','-','=', 0 , 0 ,
+		'q','w','e','r','t','y','u','i','o','p','[',']', 0 , 0 ,'a','s',
+		'd','f','g','h','j','k','l',';','\'','`', 0 ,'\\','z','x','c','v',
+		'b','n','m',',','.','/', 0 ,'*', 0 ,' ', 0 , 0 , 0 , 0 , 0 , 0 ,
  		 0 , 0 , 0 , 0 , 0 , 0 , 0 ,'7','8','9','-','4','5','6','+','1',
 		'2','3','0','.', 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,
  		 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,
- 		 0 , 0 ,'_', 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,'\\', 0 , 0 
+ 		 0 , 0 ,'_', 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,'\\', 0 , 0 ,
+ 		 0 , 0 ,'!','@','#','$','%','^','&','*','(',')','_','+', 0 , 0 ,
+		'Q','W','E','R','T','Y','U','I','O','P','[',']', 0 , 0 ,'A','S',
+		'D','F','G','H','J','K','L',';','|','~', 0 ,'\\','Z','X','C','V',
+		'B','N','M',',','.','/', 0 ,'*', 0 ,' ', 0 , 0 , 0 , 0 , 0 , 0 ,
+ 		 0 , 0 , 0 , 0 , 0 , 0 , 0 ,'7','8','9','_','4','5','6','+','1',
+		'2','3','0','.', 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,
+ 		 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,
+ 		 0 , 0 ,'_', 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,'\\', 0 , 0
 	};
+	for (int i=0x00;i<0x160;i++)
+		gloInf.keyTable[i]=keyTable[i];
 	char curInput[128];
 	int curPos = 0;
 
@@ -93,23 +98,7 @@ void HariMain()
 	setBufInSheet(sht_back,buf_back,binfo->scrnx,binfo->scrny,-1);//初始化图层，其中无透明色 
 	initScreenOnSht(sht_back);//画图层
 	slideSheet(sht_back,0,0);//移动图层位置
-	updownSheet(sht_back,0);//挪动图层高度，到底层 
-
-	//显示内存大小
-	char str[128];
-	sprintf (str,"Memory: %dM",size/1024/1024);
-	putStrAndBackOnSht(sht_back,0,0,LIGHTRED,LIGHTGRAY,str,13);
-	
-	//显示窗口
-	struct Sheet *sht_window;
-	unsigned char *buf_window;
-	sht_window=allocSheet();
-	buf_window=(unsigned char *)allocMem_4k(160*68);//申请内存空间 
-	setBufInSheet(sht_window,buf_window,160,68,-1);
-	makeWindow(sht_window,160,68,"window");
-	putStrOnSht(sht_window,16+0*8,28+0*16,BLACK,"Welcome to my OS");
-	slideSheet(sht_window,80,72);
-	updownSheet(sht_window,1);
+	setHeightSheet(sht_back,0);
 	
 	//初始化鼠标图层
 	struct Sheet *sht_mouse;
@@ -118,85 +107,103 @@ void HariMain()
 	setBufInSheet(sht_mouse,mousebuf,16,16,99);
 	initMouseCursor(sht_mouse);
 	slideSheet(sht_mouse, mdec.x, mdec.y);
-	updownSheet(sht_mouse,2);
+	setHeightSheet(sht_mouse,3); 
 	
-	//初始化控制台图层
-	struct Sheet *consoleSheet;
-	unsigned char *consoleBuffer;	
-	consoleBuffer=(unsigned char *)allocMem_4k(256*165);
-	consoleSheet=allocSheet();
-	setBufInSheet(consoleSheet,consoleBuffer,256,165,-1);//没有透明色
-	slideSheet(consoleSheet,32,8);
-	makeWindow(consoleSheet,256,165,"Console");
-	makeTextBox(consoleSheet,8,28,240,128,BLACK);
-	updownSheet(sht_back,0);
-	updownSheet(consoleSheet,1);
-	updownSheet(sht_window,2);
-	updownSheet(sht_mouse,3); 
-	
+	//显示基本信息 
+	char str[128]; 
+	//显示内存大小
+	sprintf (str,"Memory: %dM",size/1024/1024);
+	putStrAndBackOnSht(sht_back,0,0,LIGHTRED,LIGHTGRAY,str,-1);
+	//显示Focus窗口
+	sprintf (str,"Fouse: Window");
+	putStrAndBackOnSht(sht_back,0,1*16,LIGHTRED,LIGHTBLUE,str,40);
 	refreshAllSheet();//所有图层准备 
 	
 	//初始化多任务
-	initTask();
+	initTaskCTL();
+	
 	
 	//设定主任务
 	struct Task *mainTask;
 	mainTask=getMainTask();
-	//关联键鼠缓冲与主任务 
-	allbuf.key.task=mainTask;
-	allbuf.mouse.task=mainTask;
+	
+	//初始化焦点，开始焦点为Window任务 
+	gloInf.focus=1;
+	gloInf.winCount=1;
+	//定义Window任务
+	struct Task *windowTask;
+	windowTask=allocTask();
+	initTask(windowTask,(int)&windowTask_Main,gloInf.winCount);
+	sprintf (gloInf.winName[gloInf.winCount],"Window");
+	runTask(windowTask);
 	
 	//定义Console任务
 	struct Task *consoleTask;
 	consoleTask=allocTask();
-	consoleTask->tss.esp=allocMem_4k(64*1024)+64*1024-12;//栈底指针为内存的末尾·为了让地址不超过范围：sht_back为esp+8到esp+12 
-	consoleTask->tss.eip=(int) &consoleTask_Main;
-	consoleTask->tss.es=1*8;
-	consoleTask->tss.cs=2*8;
-	consoleTask->tss.ss=1*8;
-	consoleTask->tss.ds=1*8;
-	consoleTask->tss.fs=1*8;
-	consoleTask->tss.gs=1*8;
-	*((int *)(consoleTask->tss.esp+4)) = (int)scl;//压入栈，当作函数的参数 
-	*((int *)(consoleTask->tss.esp+8)) = (int)consoleSheet;
+	gloInf.winCount++;
+	initTask(consoleTask,(int)&consoleTask_Main,gloInf.winCount);
+	sprintf (gloInf.winName[gloInf.winCount],"Console");
 	runTask(consoleTask);
 	
-	
-	int count=0;
 	int flag;
-	int pst=0;//光标状态 
-	
+	gloInf.isShift=0;
 	//程序大循环 
 	while(1)
 	{
-		count++;
 		flag=0;
 		//检查各类中断 
 		io_cli();
-		if (getBuffer(&(allbuf.key),&data))
+		if (getBuffer(&allBuf.key,&data))
 		{
 			//键盘 
 			io_sti();
 			flag=1;
-			sprintf (str,"Key:%x",data);
-			putStrAndBackOnSht(sht_back,0,1*16,LIGHTRED,LIGHTBLUE,str,6);//显示键盘信息 
-			
-			if (data<0x80 && keyTable[data]>0)
+			sprintf (str,"Key: %x",data);
+			putStrAndBackOnSht(sht_back,0,2*16,LIGHTRED,LIGHTBLUE,str,26);//显示键盘信息 
+			//执行键盘动作 
+			switch (data)
 			{
-				curInput[curPos++] = keyTable[data];
-				curInput[curPos] = '\0';
-				sprintf (str,"%s",curInput);
-				putStrAndBackOnSht(sht_window,16,44,BLACK,WHITE,str,16);
-			}else if (data==0x0e)
-			{
-				if (curPos>0)
-					curInput[--curPos] = '\0';
-				sprintf (str,"%s",curInput);
-				putStrAndBackOnSht(sht_window,16,44,BLACK,WHITE,str,16);
+				case 0x0f://Tab键
+					gloInf.focus%=gloInf.winCount;
+					gloInf.focus++; 
+					sprintf (str,"Focus: %s",gloInf.winName[gloInf.focus]);
+					putStrAndBackOnSht(sht_back,0,1*16,LIGHTRED,LIGHTBLUE,str,40);
+					break;
+				case 0x2a:
+				case 0x36://Shift按住 
+					gloInf.isShift=1;
+					break;
+				case 0xaa:
+					case 0xb6://Shift松开 
+					gloInf.isShift=0;
+					break;
+				default://剩余键盘动作 传给子任务 
+					putBuffer(&taskctl->tasks0[gloInf.focus].bufAll.key,data);
+					break;
 			}
+			/*if (gloInf.focus==0)
+			{
+				if (data<0x80 && keyTable[data]>0 && curPos<=15)//字母，数字 
+				{
+					curInput[curPos++] = keyTable[data];
+					curInput[curPos] = '\0';
+				}else switch (data)
+				{
+					case 0x0e://退格键 
+						if (curPos>0)
+							curInput[--curPos] = '\0';
+						break; 
+					case 0x0f://Tab键
+						gloInf.focus++; 
+						gloInf.focus%=gloInf.winCount;
+						break;
+				}
+				sprintf (str,"%s",curInput);
+				putStrAndBackOnSht(sht_window,16,44,BLACK,WHITE,str,16);
+			}*/
 			
 		}
-		if (getBuffer(&allbuf.mouse,&data))
+		if (getBuffer(&allBuf.mouse,&data))
 		{
 			//鼠标 
 			io_sti();
@@ -215,23 +222,28 @@ void HariMain()
 					mdec.y=binfo->scrny-1;
 				
 				
-				sprintf (str,"Mouse:");
+				sprintf (str,"Mouse: ");
 				if (mdec.lbtn)
 					sprintf (str,"%sL",str);
 				if (mdec.mbtn)  
 					sprintf (str,"%sM",str);				
 				if (mdec.rbtn)
-				{
-					slideSheet(sht_window,mdec.x,mdec.y);
 					sprintf (str,"%sR",str);
-				}
-				sprintf (str,"%s (%d,%d,%d,%d)",str,mdec.x,mdec.y,mdec.dx,mdec.dy);
-				putStrAndBackOnSht(sht_back,0,2*16,LIGHTRED,LIGHTBLUE,str,25);//显示键盘信息 
+				sprintf (str,"%s (%d,%d)",str,mdec.x,mdec.y);
+				putStrAndBackOnSht(sht_back,0,3*16,LIGHTRED,LIGHTBLUE,str,25);//显示鼠标信息 
 				slideSheet(sht_mouse,mdec.x,mdec.y);
+				
+				//剩余鼠标动作传给子任务 
+				if (mdec.lbtn)
+					putBuffer(&taskctl->tasks0[gloInf.focus].bufAll.mouse,0);
+				else if (mdec.mbtn)
+					putBuffer(&taskctl->tasks0[gloInf.focus].bufAll.mouse,1);
+				else if (mdec.rbtn)
+					putBuffer(&taskctl->tasks0[gloInf.focus].bufAll.mouse,2);
 				
 			}
 		}
-		if (getBuffer(&timeBuffer,&data))
+		/*if (getBuffer(&timeBuffer,&data))
 		{
 			//定时器 
 			io_sti();
@@ -250,36 +262,189 @@ void HariMain()
 				refreshSubInSheet(sht_window,16+8*curPos,44,8,15);
 				setTimer(timer1,50);
 				break; 
-			/*case 20://5秒后切换到任务B（休眠） 
-				farjmp(0,4*8);
-				setTimer(timer2,2);*/ 
 			}
-		}
+		}*/
 		if (flag==0)
 		{
 			//没有事件就休眠 
-			sleepTask(mainTask);
+			//sleepTask(mainTask);
 			io_sti();
 		}
 	}
 }
 
-
-//任务B不需要关心任务的切换 
-void consoleTask_Main(struct SheetControl *scl,struct Sheet *sht_back)
+//window任务 
+void windowTask_Main(struct Task *task)
 {
+	//初始化缓冲区 
+	char bufferArray[128];
+	struct Buffer bufferTime;
+	initBuffer(&bufferTime,128,bufferArray);
+
+	//初始化定时器 
+	struct Timer *timerCur;
+	timerCur=allocTimer();
+	initTimer(timerCur,&bufferTime,1);
+	setTimer(timerCur,50);
+
+	//显示窗口
+	struct Sheet *sht_window;
+	unsigned char *buf_window;
+	sht_window=allocSheet();
+	buf_window=(unsigned char *)allocMem_4k(160*68);//申请内存空间 
+	setBufInSheet(sht_window,buf_window,160,68,-1);
+	makeWindow(sht_window,160,68,"Window");
+	putStrOnSht(sht_window,16+0*8,28+0*16,BLACK,"Welcome to YangXL OS");
+	slideSheet(sht_window,280,72);
+	setHeightSheet(sht_window,2);
 	
-	int count=1000000001,num=0;
+	//输入
+	char curInput[128];
+	int curPos=0;
+	unsigned char data;
 	char str[128];
+	int flag=0;
 	while (1)
 	{
-		if (count>1000000000)
+		flag=0; 
+		if (gloInf.focus!=task->winID)//焦点不在，取消光标 
 		{
-			count=0;
-			num++;
-			sprintf (str,"Task B:%x(G)",num);
-			putStrAndBackOnSht(sht_back,16+0*8,28+0*16,WHITE,BLACK,str,13);//显示任务B
+			boxfillOnSht(sht_window,16+8*curPos,44,8,15,WHITE);
+			refreshSubInSheet(sht_window,16+8*curPos,44,8,15); 
+			continue;
+		}else if (timerCur->flag==TIMER_ALLOCED)//重新获得焦点，重启光标 
+		{
+			initTimer(timerCur,&bufferTime,1);
+			setTimer(timerCur,50);
 		}
-		count++;
-	} 
+		io_cli();
+		//检查鼠标键盘事件 
+		if (getBuffer(&task->bufAll.key,&data))
+		{
+			//键盘 
+			io_sti();
+			flag=1;
+			if (data<0x80 && gloInf.keyTable[data]>0 && curPos<=15)//字母，数字 
+			{
+				if (gloInf.isShift)
+					curInput[curPos++] = gloInf.keyTable[data+0x80];
+				else curInput[curPos++] = gloInf.keyTable[data];
+				curInput[curPos] = '\0';
+			}else switch (data)
+			{
+				case 0x0e://退格键 
+					if (curPos>0)
+						curInput[--curPos] = '\0';
+					break; 
+				default:
+					break;
+			}
+			sprintf (str,"%s",curInput);
+			putStrAndBackOnSht(sht_window,16,44,BLACK,WHITE,str,16);
+		}
+		if (getBuffer(&task->bufAll.mouse,&data))
+		{
+			io_sti();
+			flag=2;
+			switch(data)
+			{
+				case 2:
+					slideSheet(sht_window,mdec.x,mdec.y);
+					break;
+			}
+		}
+		if (getBuffer(&bufferTime,&data))
+		{
+			io_sti();
+			flag=3;
+			switch (data)
+			{
+			case 0:
+				initTimer(timerCur,&bufferTime,1);
+				boxfillOnSht(sht_window,16+8*curPos,44,8,15,WHITE);
+				refreshSubInSheet(sht_window,16+8*curPos,44,8,15);   
+				setTimer(timerCur,50);
+				break;
+			case 1:
+				initTimer(timerCur,&bufferTime,0);
+				boxfillOnSht(sht_window,16+8*curPos,44,8,15,BLACK);
+				refreshSubInSheet(sht_window,16+8*curPos,44,8,15);
+				setTimer(timerCur,50);
+				break; 
+			}
+		} 
+		if (flag==0)
+			io_sti();
+	}
+}
+
+
+
+//任务console不需要关心任务的切换 
+void consoleTask_Main(struct Task *task)
+{
+	//初始化缓冲区 
+	char bufferArray[128];
+	struct Buffer bufferTime;
+	initBuffer(&bufferTime,128,bufferArray);
+
+	//初始化定时器 
+	struct Timer *timerCur;
+	timerCur=allocTimer();
+	initTimer(timerCur,&bufferTime,1);
+	setTimer(timerCur,50);
+	
+	//初始化控制台图层
+	struct Sheet *consoleSheet;
+	unsigned char *consoleBuffer;	
+	consoleBuffer=(unsigned char *)allocMem_4k(512*310);
+	consoleSheet=allocSheet();
+	setBufInSheet(consoleSheet,consoleBuffer,512,310,-1);//没有透明色
+	slideSheet(consoleSheet,202,8);
+	makeWindow(consoleSheet,512,310,"Console");
+	makeTextBox(consoleSheet,8,27,496,276,BLACK);
+	setHeightSheet(consoleSheet,1);
+	
+	unsigned char data;
+	int curPos=0;
+	int flag=0;
+	while (1)
+	{
+		flag=0;
+		if (gloInf.focus!=task->winID)//焦点不在，取消光标 
+		{
+			boxfillOnSht(consoleSheet,8+8*curPos,28,8,15,BLACK);
+			refreshSubInSheet(consoleSheet,8+8*curPos,28,8,15); 
+			continue;
+		}else if (timerCur->flag==TIMER_ALLOCED)//重新获得焦点，重启光标 
+		{
+			initTimer(timerCur,&bufferTime,1);
+			setTimer(timerCur,50);
+		}
+		io_cli();
+		if (getBuffer(&bufferTime,&data))
+		{
+			io_sti();
+			flag=3;
+			switch (data)
+			{
+			case 0:
+				initTimer(timerCur,&bufferTime,1);
+				boxfillOnSht(consoleSheet,8+8*curPos,28,8,15,WHITE);
+				refreshSubInSheet(consoleSheet,8+8*curPos,28,8,15);   
+				setTimer(timerCur,50);
+				break;
+			case 1:
+				initTimer(timerCur,&bufferTime,0);
+				boxfillOnSht(consoleSheet,8+8*curPos,28,8,15,BLACK);
+				refreshSubInSheet(consoleSheet,8+8*curPos,28,8,15);
+				setTimer(timerCur,50);
+				break; 
+			}
+		} 
+		if (flag==0)
+		{
+			io_sti();
+		} 
+	}
 }

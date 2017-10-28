@@ -75,7 +75,7 @@ void inthandler21(int *esp)
 	//键盘中断是IRQ1，向PIC0发送0x(1+60)即可
 	io_out8(PIC0_OCW2,0x61);
 	unsigned char data=io_in8(PORT_KEYDAT);
-	putBuffer(&allbuf.key,data);
+	putBuffer(&allBuf.key,data);
 	return;
 }
 //不明白是干啥的
@@ -92,6 +92,6 @@ void inthandler2c(int *esp)
 	io_out8(PIC1_OCW2,0x64);
 	io_out8(PIC0_OCW2,0x62);
 	unsigned char data=io_in8(PORT_KEYDAT);
-	putBuffer(&allbuf.mouse,data);
+	putBuffer(&allBuf.mouse,data);
 	return;
 } 

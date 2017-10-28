@@ -10,6 +10,6 @@ struct Mouse_Dec
 	int lbtn,rbtn,mbtn;
 	int x,y;
 };
-
+extern struct Mouse_Dec mdec;
 void enable_mouse(struct Mouse_Dec *mdec);
 int mouse_decode(struct Mouse_Dec *mdec,unsigned char data);

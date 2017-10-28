@@ -41,6 +41,17 @@ void setBufInSheet(struct Sheet *sht,unsigned char *buf,int xsize,int ysize,int 
 	sht->ysize=ysize;
 	sht->col_inv=col_inv;
 }
+
+//设置图层高度
+void setHeightSheet(struct Sheet *sht,int height) 
+{
+	sht->height=height;
+	if (scl->top<height)
+		scl->top=height;
+	scl->sheetp[height]=sht;
+	refreshSubSheet(sht->x0,sht->y0,sht->xsize,sht->ysize,0);
+}
+
 //滑动图层 （修改高度） 
 void updownSheet(struct Sheet *sht,int height)
 {

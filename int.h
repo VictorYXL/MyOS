@@ -19,7 +19,7 @@ void inthandler21(int *esp);
 void inthandler27(int *esp);
 void inthandler2c(int *esp);
 
-extern struct BufferAll allbuf;
+extern struct BufferAll allBuf;
 extern struct TimerCTL timerctl;
 extern struct Timer *taskTimer;
 //extern int mt_tr; 

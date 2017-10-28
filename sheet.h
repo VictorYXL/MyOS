@@ -23,6 +23,7 @@ extern struct MemoryList *meml;*/
 struct SheetControl* initSCL(struct BootInfo *binfo);
 struct Sheet *allocSheet();
 void setBufInSheet(struct Sheet *sht,unsigned char *buf,int xsize,int ysize,int col_inv);
+void setHeightSheet(struct Sheet *sht,int height);
 void updownSheet(struct Sheet *sht,int height);
 void slideSheet(struct Sheet* sht,int vx0,int vy0);
 void freeSheet(struct Sheet* sht);

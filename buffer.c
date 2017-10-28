@@ -1,9 +1,8 @@
 #include"buffer.h"
-#include"mtask.h"
 
-struct BufferAll allbuf;
+struct BufferAll allBuf;
 
-void initBuffer(struct Buffer *buffer,int bufferSize,unsigned char *tmp,struct Task *task)
+void initBuffer(struct Buffer *buffer,int bufferSize,unsigned char *tmp)
 {
 	buffer->bufferSize=bufferSize;
 	buffer->data=tmp;
@@ -11,7 +10,6 @@ void initBuffer(struct Buffer *buffer,int bufferSize,unsigned char *tmp,struct T
 	buffer->free=buffer->bufferSize;
 	buffer->h=0;
 	buffer->r=0;
-	buffer->task=task; 
 	return; 
 }
 int putBuffer(struct Buffer *buffer,unsigned char data)
@@ -28,9 +26,9 @@ int putBuffer(struct Buffer *buffer,unsigned char data)
 	buffer->free--;
 	
 	//»½ĞÑÈÎÎñ 
-	if (buffer->task!=0)
+	/*if (buffer->task!=0)
 		if (buffer->task->flags!=TASK_USING)
-			runTask(buffer->task);
+			runTask(buffer->task);*/
 	return 1;
 }
 int getBuffer(struct Buffer *buffer,unsigned char *data)

@@ -1,11 +1,11 @@
 #include"timer.h"
 #include"nasmfunc.h" 
-#include"mtask.h"
 #include"dsctbl.h"
 #include"memory.h"
+#include"buffer.h"
 #include"mtask.h"
 struct TaskCTL *taskctl;
-void initTask()
+void initTaskCTL()
 {
 	int i=0;
 	struct Segment_Descriptor *gdt=(struct Segment_Descriptor *)ADR_GDT;
@@ -63,6 +63,28 @@ struct Task *allocTask()
 		}
 	}
 	return 0;
+}
+void initTask(struct Task *task,int eip,int winID)//,unsigned char *keyb,unsigned char *mouseb)
+{
+	task->tss.esp=allocMem_4k(64*1024)+64*1024-8;//栈底指针为内存的末尾·为了让地址不超过范围：sht_back为esp+4到esp+8 
+	task->tss.eip=eip;
+	task->tss.es=1*8;
+	task->tss.cs=2*8;
+	task->tss.ss=1*8;
+	task->tss.ds=1*8;
+	task->tss.fs=1*8;
+	task->tss.gs=1*8;
+	*((int *)(task->tss.esp+4)) = (int)task;//压入栈，当作函数的参数 
+	
+	//设定ID 
+	task->winID=winID;
+	
+	//键盘鼠标缓冲区
+	unsigned char *keyb=(unsigned char *)allocMem(32);
+	unsigned char *mouseb=(unsigned char *)allocMem(1024);
+	initBuffer(&task->bufAll.key,32,keyb);
+	initBuffer(&task->bufAll.mouse,1024,mouseb);  
+
 }
 void runTask(struct Task *task)
 {
