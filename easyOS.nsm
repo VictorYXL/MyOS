@@ -24,12 +24,11 @@ DSKCAC0	EQU		0x00008000		; ディスクキャッシュの場所（リアルモード）
 	MOV WORD [SCRNX],320		;分辨率320*200
 	MOV WORD [SCRNY],200
 	MOV DWORD [VRAM],0x000a0000	;?冲区?始于?位置
-
-
 ;?取LED灯的信息
 	MOV AH,0x02
 	INT 0x16
 	MOV [LEDS],AL
+fin:
 
 ; PICが一切の割り込みを受け付けないようにする
 ;	AT互換機の仕様では、PICの初期化をするなら、
