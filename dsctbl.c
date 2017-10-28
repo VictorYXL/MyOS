@@ -2,20 +2,26 @@
 #include"dsctbl.h" 
 void init_gdtidt(void)
 {
-	struct Segment_Descriptor *gdt=(struct Segment_Descriptor *) 0x00270000;
-	struct Gate_Descriptor *idt=(struct Gate_Descriptor *) 0x0026f800;
+	struct Segment_Descriptor *gdt=(struct Segment_Descriptor *) ADR_GDT;
+	struct Gate_Descriptor *idt=(struct Gate_Descriptor *) ADR_IDT;
 	int i;
 	
 	for (i=0;i<8192;i++)
 		set_segmdesc(gdt+i,0,0,0);
-	set_segmdesc(gdt+1,0xffffffff,0x00000000,0x4092);
-	set_segmdesc(gdt+2,0x0007ffff,0x00280000,0x409a);
-	load_gdtr(0xffff,0x00270000);
+	
+	set_segmdesc(gdt+1,0xffffffff,0x00000000,AR_DATA32_RW);
+	set_segmdesc(gdt+2,LIMIT_BOTPAK, ADR_BOTPAK, AR_CODE32_ER);
+	//将GDTR写入寄存器，他记录了全局段表的基址和界限 
+	load_gdtr(LIMIT_GDT, ADR_GDT);
 	
 	for (i=0;i<256;i++)
 		set_gatedesc(idt+i,0,0,0);
-	load_idtr(0x7ff,0x0026f800);
+	load_idtr(LIMIT_IDT, ADR_IDT);
 	
+	//21号中断，中断处理程序在第二个段的nsm_inthandler21中
+	//第二个段是全局 
+	set_gatedesc(idt+0x21,(int)nsm_inthandler21,2<<3,AR_INTGATE32);
+	return;
 } 
 void set_segmdesc(struct Segment_Descriptor *sd,unsigned int limit,int base,int ar)
 {
@@ -42,4 +48,5 @@ void set_gatedesc(struct Gate_Descriptor *gd,int offset,int selector,int ar)
 	gd->dw_count=(ar>>8)&0xff;
 	gd->access_right=ar&0xff;
 	gd->offset_high=(offset>>16)&0xffff;
+	return;
 }

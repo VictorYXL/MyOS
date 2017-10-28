@@ -1,11 +1,11 @@
 #include"nasmfunc.h"
 #include"graphic.h"
-void boxfill(unsigned char *vram,int xsize,unsigned char c,int x0,int y0,int x1,int y1)
+void boxfill(struct BootInfo *binfo,unsigned char c,int x0,int y0,int x1,int y1)
 {
 	int i,j;
 	for (j=y0;j<=y1;j++)
 		for (i=x0;i<=x1;i++)
-			vram[j*xsize+i]=c;
+			binfo->vram[j*binfo->scrnx+i]=c;
 }
 
 void putfont8(struct BootInfo *binfo,char *fontlib,int x,int y,char color,char c)
@@ -19,8 +19,9 @@ void putfont8(struct BootInfo *binfo,char *fontlib,int x,int y,char color,char c
 				binfo->vram[(y+i)*binfo->scrnx+x+j]=color;
 				
 }
-void putstr(struct BootInfo *binfo,char *fontlib,int x,int y,char color,char *str)
+void putstr(struct BootInfo *binfo,int x,int y,char color,char *str)
 {
+	extern char fontlib[4096];
 	char *t=str;
 	while (*t!=0x00)
 	{
@@ -124,21 +125,21 @@ void init_screen(struct BootInfo *binfo)
 	int y=binfo->scrny;
 	
 	//»­ÈÎÎñ¿ò
-	boxfill(vram,x,4,0,0,x-1,y-29);
-	boxfill(vram,x,8,0,y-28,x-1,y-28);
-	boxfill(vram,x,8,0,y-27,x-1,y-27);
-	boxfill(vram,x,7,0,y-26,x-1,y-1);
+	boxfill(binfo,4,0,0,x-1,y-29);
+	boxfill(binfo,8,0,y-28,x-1,y-28);
+	boxfill(binfo,8,0,y-27,x-1,y-27);
+	boxfill(binfo,7,0,y-26,x-1,y-1);
 
-	boxfill(vram,x,7,3,y-24,59,y-24);
-	boxfill(vram,x,7,2,y-24,2,y-4);
-	boxfill(vram,x,15,3,y-4,59,y-4);
-	boxfill(vram,x,15,59,y-23,59,y-5);
-	boxfill(vram,x,0,2,y-3,59,y-3);
-	boxfill(vram,x,0,60,y-24,60,y-3);
+	boxfill(binfo,7,3,y-24,59,y-24);
+	boxfill(binfo,7,2,y-24,2,y-4);
+	boxfill(binfo,15,3,y-4,59,y-4);
+	boxfill(binfo,15,59,y-23,59,y-5);
+	boxfill(binfo,0,2,y-3,59,y-3);
+	boxfill(binfo,0,60,y-24,60,y-3);
 
-	boxfill(vram,x,15,x-47,y-24,x-4,y-24);
-	boxfill(vram,x,15,x-47,y-23,x-47,y-4);
-	boxfill(vram,x,7,x-47,y-3,x-4,y-3);
-	boxfill(vram,x,7,x-3,y-24,x-3,y-3);
+	boxfill(binfo,15,x-47,y-24,x-4,y-24);
+	boxfill(binfo,15,x-47,y-23,x-47,y-4);
+	boxfill(binfo,7,x-47,y-3,x-4,y-3);
+	boxfill(binfo,7,x-3,y-24,x-3,y-3);
 	return;
 }
