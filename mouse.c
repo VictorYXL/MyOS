@@ -3,11 +3,11 @@
 #include"nasmfunc.h"
 #include"buffer.h"
 
-//æ¿€æ´»é¼ æ ‡
+//¼¤»îÊó±ê
 void enable_mouse(struct Mouse_Dec *mdec)
 {
 	wait_KBC_sendready();
-	//å‘é€é¼ æ ‡æ¿€æ´»çš„å‘½ä»¤
+	//·¢ËÍÊó±ê¼¤»îµÄÃüÁî
 	io_out8(PORT_KEYCMD,KEYCMD_SENDTO_MOUSE);
 	wait_KBC_sendready();
 	io_out8(PORT_KEYDAT,MOUSECMD_ENABLE);

@@ -63,13 +63,12 @@ unsigned int memtest_sub(unsigned int start,unsigned int end)
 	return i;
 }
 
-void mem_init()
+void mem_init(struct MemoryList *meml)
 {
-	meml=(struct MemoryList *)MEMORYLISTADDR;
 	meml->freesize=0;
 	meml->maxfreesize=0;
 }
-unsigned int mem_freetotal()
+unsigned int mem_freetotal(struct MemoryList *meml)
 {
 	int i,t=0;
 	for (i=0;i<meml->maxfreesize;i++) 
@@ -77,11 +76,11 @@ unsigned int mem_freetotal()
 	return t;
 }
 //分配空间 
-unsigned int mem_alloc(unsigned int size)
+unsigned int mem_alloc(struct MemoryList *meml,unsigned int size)
 {
 	
 	int i,a,j;
-	for (i=0;i<meml->maxfreesize;i++)
+	for (i=0;i<meml->freesize;i++)
 	{
 		if (meml->free[i].size>=size)
 		{
@@ -91,18 +90,18 @@ unsigned int mem_alloc(unsigned int size)
 			//删除表项 
 			if (meml->free[i].size==0)
 			{
-				for (j=i;j<meml->maxfreesize;j++)
+				for (j=i;j<meml->freesize;j++)
 					meml->free[j]=meml->free[j+1];
 			}
+			return a;
 		}
-		return a;
 	}
 }
-int mem_free(unsigned int addr,unsigned int size)
+int mem_free(struct MemoryList *meml,unsigned int addr,unsigned int size)
 {
 	int i,j;
 	//获取待插入位置 
-	for (i=0;i<meml->maxfreesize;i++)
+	for (i=0;i<meml->freesize;i++)
 		if (meml->free[i].addr>addr)
 			break;
 	//与前表项可以合并 
@@ -134,21 +133,24 @@ int mem_free(unsigned int addr,unsigned int size)
 		meml->free[j+1]=meml->free[j];
 	meml->free[i].addr=addr;
 	meml->free[i].size=size;
+	if (meml->free[i].size>meml->maxfreesize)
+		meml->maxfreesize=meml->free[i].size;
+	meml->freesize++; 
 	return 0;
 }
 //一次申请4KB
-unsigned int mem_alloc_4k(unsigned int size)
+unsigned int mem_alloc_4k(struct MemoryList *meml,unsigned int size)
 {
 	unsigned int a;
 	size=(size+0xfff)&0xfffff000;
-	a=mem_alloc(size);
+	a=mem_alloc(meml,size);
 	return a;
 }
 //一次释放4KB
-int mem_free_4k(unsigned int addr,unsigned int size)
+int mem_free_4k(struct MemoryList *meml,unsigned int addr,unsigned int size)
 {
 	unsigned int a;
 	size=(size+0xfff)&0xfffff000;
-	a=mem_free(addr,size);
+	a=mem_free(meml,addr,size);
 	return a;
 }

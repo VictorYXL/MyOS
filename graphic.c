@@ -1,14 +1,16 @@
 #include"nasmfunc.h"
+#include"memory.h"
+#include"sheet.h"
 #include"graphic.h"
-void boxfill(struct BootInfo *binfo,int x0,int y0,int pxsize,int pysize,unsigned char c)
+void boxfill_sht(struct Sheet *sht,int x0,int y0,int pxsize,int pysize,unsigned char c)
 {
 	int i,j;
 	for (j=y0;j<y0+pysize;j++)
 		for (i=x0;i<x0+pxsize;i++)
-			binfo->vram[j*binfo->scrnx+i]=c;
+			sht->buffer[j*sht->xsize+i]=c;
 }
 
-void putfont8(struct BootInfo *binfo,char *fontlib,int x,int y,char color,char c)
+void putfont8_sht(struct Sheet *sht,int x,int y,char color,char c)
 {
 	int i,j;
 	char tmp[8]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
@@ -16,22 +18,21 @@ void putfont8(struct BootInfo *binfo,char *fontlib,int x,int y,char color,char c
 	for (i=0;i<16;i++)
 		for (j=0;j<8;j++)
 			if ((font[i]&tmp[j])!=0)
-				binfo->vram[(y+i)*binfo->scrnx+x+j]=color;
+				sht->buffer[(y+i)*sht->xsize+x+j]=color;
 				
 }
-void putstr(struct BootInfo *binfo,int x,int y,char color,char *str)
+void putstr_sht(struct Sheet *sht,int x,int y,char color,char *str)
 {
-	extern char fontlib[4096];
 	char *t=str;
 	while (*t!=0x00)
 	{
-		putfont8(binfo,fontlib,x,y,color,*t);
+		putfont8_sht(sht,x,y,color,*t);
 		x+=8;
 		t++;
 	}
 }
 
-void init_mouse_cursor(char *mouse)
+void init_mouse_cursor(struct Sheet *sht)
 {
 	//鼠标坐标图
 	static char cursor[18][17] = {
@@ -60,22 +61,22 @@ void init_mouse_cursor(char *mouse)
 			switch(cursor[i+2][j])
 			{
 				case '*':
-					mouse[i*16+j]=BLACK;
+					sht->buffer[i*16+j]=BLACK;
 					break;
 				case 'O':
-					mouse[i*16+j]=WHITE;
+					sht->buffer[i*16+j]=WHITE;
 					break;
 				default:
-					mouse[i*16+j]=-1;
+					sht->buffer[i*16+j]=sht->col_inv;
 			}
 }
 
-void put_block(struct BootInfo *binfo,int x0,int y0,int pxsize,int pysize,char *block)
+void put_block_sht(struct Sheet *sht,int x0,int y0,int pxsize,int pysize,char *block)
 {
 	for (int y=0;y<pysize;y++)
 		for (int x=0;x<pxsize;x++)
 			if (block[y*pxsize+x]>=0)
-				binfo->vram[(y0+y)*binfo->scrnx+x0+x]=block[y*pxsize+x];
+				sht->buffer[(y0+y)*sht->xsize+x0+x]=block[y*pxsize+x];
 }
 
 void init_palette()
@@ -120,31 +121,53 @@ void set_palette(int start,int end,unsigned char rgb[16][3])
 	
 	io_store_eflags(eflags);
 }
-
-void init_screen(struct BootInfo *binfo)
+void init_screen_sht(struct Sheet *sht)
 {
-	char *vram=binfo->vram;
-	int x=binfo->scrnx;
-	int y=binfo->scrny;
+	//char *vram=sht->buffer;
+	
+	
+	int x=sht->xsize; 
+	int y=sht->ysize;
 	
 	//画任务框
-	//void boxfill(struct BootInfo *binfo,unsigned char c,int x0,int y0,int x1,int y1)
-	//boxfill(binfo,4,0,0,x-1,y-29);
-	boxfill(binfo,0,0,x,y-28,4);
-	boxfill(binfo,0,y-28,x,1,8);
-	boxfill(binfo,0,y-27,x,1,8);
-	boxfill(binfo,0,y-26,x,26,7);
+	boxfill_sht(sht,0,0,x,y-28,LIGHTBLUE);
+	boxfill_sht(sht,0,y-28,x,1,LIGHTGRAY);
+	boxfill_sht(sht,0,y-27,x,1,LIGHTGRAY);
+	boxfill_sht(sht,0,y-26,x,26,WHITE);
 
-	boxfill(binfo,3,y-24,57,1,7);
-	boxfill(binfo,2,y-24,1,21,7);
-	boxfill(binfo,3,y-4,57,1,15);
-	boxfill(binfo,59,y-23,1,19,15);
-	boxfill(binfo,2,y-3,57,1,0);
-	boxfill(binfo,60,y-24,1,22,0);
+	boxfill_sht(sht,3,y-24,57,1,WHITE);
+	boxfill_sht(sht,2,y-24,1,21,WHITE);
+	boxfill_sht(sht,3,y-4,57,1,DULLGRAY);
+	boxfill_sht(sht,59,y-23,1,19,DULLGRAY);
+	boxfill_sht(sht,2,y-3,57,1,BLACK);
+	boxfill_sht(sht,60,y-24,1,22,BLACK);
 
-	boxfill(binfo,x-47,y-24,44,1,15);
-	boxfill(binfo,x-47,y-23,1,20,15);
-	boxfill(binfo,x-47,y-3,44,1,7);
-	boxfill(binfo,x-3,y-24,1,22,7);
+	boxfill_sht(sht,x-47,y-24,44,1,DULLGRAY);
+	boxfill_sht(sht,x-47,y-23,1,20,DULLGRAY);
+	boxfill_sht(sht,x-47,y-3,44,1,WHITE);
+	boxfill_sht(sht,x-3,y-24,1,22,WHITE);
 	return;
 }
+
+void putfont8_srn(struct BootInfo *binfo,int x,int y,char color,char c)
+{
+	int i,j;
+	char tmp[8]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
+	char *font=fontlib+c*16;
+	for (i=0;i<16;i++)
+		for (j=0;j<8;j++)
+			if ((font[i]&tmp[j])!=0)
+				binfo->vram[(y+i)*binfo->scrnx+x+j]=color;
+				
+}
+void putstr_srn(struct BootInfo *binfo,int x,int y,char color,char *str)
+{
+	char *t=str;
+	while (*t!=0x00)
+	{
+		putfont8_srn(binfo,x,y,color,*t);
+		x+=8;
+		t++;
+	}
+}
+

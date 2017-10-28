@@ -14,9 +14,9 @@
 #define PORT_KEYDAT		0x0060
 
 void init_pic(void);
-void inthandler21(int *esp);
+void inthandler21(int *esp,struct Buffer *keybuf);
 void inthandler27(int *esp);
-void inthandler2c(int *esp);
+void inthandler2c(int *esp,struct Buffer *mousebuf);
 
-extern struct BufferAll allbuf;
+//extern struct BufferAll allbuf;
 //extern struct Buffer keyb;

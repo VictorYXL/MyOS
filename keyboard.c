@@ -1,24 +1,25 @@
 #include"keyboard.h"
 #include"nasmfunc.h"
 #include"buffer.h"
-//ç­‰å¾…é”®ç›˜æ§åˆ¶ç”µè·¯å‡†å¤‡å®Œæ¯•
+//µÈ´ı¼üÅÌ¿ØÖÆµçÂ·×¼±¸Íê±Ï
 void wait_KBC_sendready()
 {
-	//é”®ç›˜æ§åˆ¶ç”µè·¯å‡†å¤‡å®Œæ¯•æ—¶ PORT_KEYSTAåœ°å€çš„å€’æ•°ç¬¬äºŒä½åº”è¯¥æ˜¯0
+	//¼üÅÌ¿ØÖÆµçÂ·×¼±¸Íê±ÏÊ± PORT_KEYSTAµØÖ·µÄµ¹ÊıµÚ¶şÎ»Ó¦¸ÃÊÇ0
 	while (1)
 		if ((io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY)==0)
 			break;
 	return;
 }
-//åˆå§‹åŒ–é”®ç›˜æ§åˆ¶ç”µè·¯
+//³õÊ¼»¯¼üÅÌ¿ØÖÆµçÂ·
 void init_keyboard()
 {
-	//ç­‰å¾…å¯ä»¥å‘é€ä¿¡æ¯
+	//µÈ´ı¿ÉÒÔ·¢ËÍĞÅÏ¢
 	wait_KBC_sendready();
-	//å‘é€æ¨¡å¼æŒ‡ä»¤
+	//·¢ËÍÄ£Ê½Ö¸Áî
 	io_out8(PORT_KEYCMD,KEYCMD_WRITE_MODE);
 	wait_KBC_sendready();
-	//å‘é€æŒ‡ä»¤ç¼–å·
+	//·¢ËÍÖ¸Áî±àºÅ
 	io_out8(PORT_KEYDAT,KBC_MODE);
 }
+
 

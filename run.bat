@@ -16,6 +16,7 @@ gcc buffer.c -c
 gcc keyboard.c -c
 gcc mouse.c -c
 gcc memory.c -c
+gcc sheet.c -c 
 move bootpack.o obj\bootpack.obj
 move graphic.o obj\graphic.obj
 move dsctbl.o obj\dsctbl.obj
@@ -24,8 +25,9 @@ move buffer.o obj\buffer.obj
 move keyboard.o obj\keyboard.obj
 move mouse.o obj\mouse.obj
 move memory.o obj\memory.obj
+move sheet.o obj\sheet.obj
 
-obj2bim @source\obj2bim.rul out:obj\bootpack.bim stack:3136k map:obj\bootpack.map obj\bootpack.obj obj\graphic.obj obj\nasmfunc.obj obj\fontlib.obj obj\dsctbl.obj obj\int.obj obj\buffer.obj obj\keyboard.obj obj\mouse.obj obj\memory.obj
+obj2bim @source\obj2bim.rul out:obj\bootpack.bim stack:3136k map:obj\bootpack.map obj\bootpack.obj obj\graphic.obj obj\nasmfunc.obj obj\fontlib.obj obj\dsctbl.obj obj\int.obj obj\buffer.obj obj\keyboard.obj obj\mouse.obj obj\memory.obj obj\sheet.obj
 bim2hrb obj\bootpack.bim obj\bootpack.hrb 0
 copy /B obj\easyOS.bin+obj\bootpack.hrb obj\easyOS.sys
 
