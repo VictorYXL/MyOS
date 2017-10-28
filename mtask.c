@@ -79,7 +79,7 @@ void initTask(struct Task *task,int eip,char *s,int f)//,unsigned char *keyb,uns
 	task->tss.fs=1*8;
 	task->tss.gs=1*8;
 	*((int *)(task->tss.esp+4)) = (int)task;//压入栈，当作函数的参数 
-	
+	task->parCount=0;
 	//设定ID 
 	task->winID=window.winCount;
 	

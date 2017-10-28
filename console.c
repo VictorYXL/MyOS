@@ -11,6 +11,7 @@
 #include"calculator.h" 
 #include"memorylist.h"
 #include"tasklist.h"
+#include"open.h"
 #include<stdio.h>
 #include<string.h>
 //½«×Ö·û´®½âÎö³ÉÃüÁî 
@@ -156,7 +157,7 @@ void consoleTask_Main(struct Task *task)
 						{
 							struct Task *memoryListTask; 
 							memoryListTask=allocTask();		
-							initTask(memoryListTask,(int)&memoryListTask_Main,"MemoryList",1);
+							initTask(memoryListTask,(int)&memoryListTask_Main,"Memory List",1);
 							createWindow(memoryListTask,"Memory List");
 							runTask(memoryListTask);
 							break;
@@ -165,9 +166,14 @@ void consoleTask_Main(struct Task *task)
 						{
 							struct Task *taskListTask; 
 							taskListTask=allocTask();		
-							initTask(taskListTask,(int)&taskListTask_Main,"MemoryList",1);
+							initTask(taskListTask,(int)&taskListTask_Main,"Task List",1);
 							createWindow(taskListTask,"Task List");
 							runTask(taskListTask);
+							break;
+						}
+						case Open:
+						{
+							openFile (command.par[0]);
 							break;
 						}
 					}

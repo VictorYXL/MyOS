@@ -23,6 +23,10 @@ gcc console.c -c
 gcc calculator.c -c
 gcc memorylist.c -c 
 gcc tasklist.c -c 
+gcc open.c -c
+gcc textviewer.c -c 
+gcc imageviewer.c -c 
+gcc musicplayer.c -c 
 
 move main.o obj\main.obj
 move graphic.o obj\graphic.obj
@@ -39,8 +43,12 @@ move console.o obj\console.obj
 move calculator.o obj\calculator.obj
 move memorylist.o obj\memorylist.obj
 move tasklist.o obj\tasklist.obj
+move open.o obj\open.obj
+move textviewer.o obj\textviewer.obj
+move imageviewer.o obj\imageviewer.obj
+move musicplayer.o obj\musicplayer.obj
 
-obj2bim @source\obj2bim.rul out:obj\main.bim stack:3136k map:obj\main.map obj\main.obj obj\graphic.obj obj\nasmfunc.obj obj\fontlib.obj obj\dsctbl.obj obj\int.obj obj\buffer.obj obj\keyboard.obj obj\mouse.obj obj\memory.obj obj\sheet.obj obj\timer.obj obj\mtask.obj obj\console.obj obj\calculator.obj obj\memoryList.obj obj\tasklist.obj 
+obj2bim @source\obj2bim.rul out:obj\main.bim stack:3136k map:obj\main.map obj\main.obj obj\graphic.obj obj\nasmfunc.obj obj\fontlib.obj obj\dsctbl.obj obj\int.obj obj\buffer.obj obj\keyboard.obj obj\mouse.obj obj\memory.obj obj\sheet.obj obj\timer.obj obj\mtask.obj obj\console.obj obj\calculator.obj obj\memoryList.obj obj\tasklist.obj obj\open.obj obj\textviewer.obj obj\imageviewer.obj obj\musicplayer.obj
 bim2hrb obj\main.bim obj\main.hrb 0
 copy /B obj\entry.bin+obj\main.hrb obj\MyOS.sys
 

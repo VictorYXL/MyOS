@@ -20,6 +20,8 @@ struct Task
 	struct TSS tss;	
 	struct BufferAll bufAll;
 	int winID;
+	int parCount;
+	char par[5][30];
 };
 struct TaskCTL
 {
