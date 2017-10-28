@@ -180,9 +180,11 @@ void consoleTask_Main(struct Task *task)
 						case Play:
 						{
 							struct Task *playTask; 
-							playTask=allocTask();		
-							initTask(playTask,(int)&playTask_Main,"Task List",1);
-							createWindow(playTask,"Task List");
+							playTask=allocTask();
+							initTask(playTask,(int)&playTask_Main,"Player",11);
+							sprintf(playTask->par[0],command.par[0]);
+							playTask->parCount++;
+							createWindow(playTask,"Music Player");
 							runTask(playTask);
 							break;
 						}

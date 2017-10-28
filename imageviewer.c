@@ -9,12 +9,14 @@
 #include"mouse.h"
 #include"imageviewer.h" 
 #include<stdio.h> 
+#include<string.h> 
 void loadImageFile (char *fileName,struct Sheet *imageViewerSheet)
 {
-	for (int i=1;i<7;i++)
-		for (int j=i*30;j<i*30+30;j++)
-			for (int k=5;k<295;k++)
-				imageViewerSheet->buffer[j*300+k]=i;
+	if (strcmp(fileName,"\\Image\\Pic1")==0)
+		for (int i=1;i<7;i++)
+			for (int j=i*30;j<i*30+30;j++)
+				for (int k=5;k<295;k++)
+					imageViewerSheet->buffer[j*300+k]=i;
 	refreshSheet(imageViewerSheet);
 }
 void imageViewerTask_Main(struct Task *task)

@@ -12,9 +12,7 @@ extern struct TimerCTL timerctl;
 extern struct Mouse_Dec mdec;
 extern struct MemoryList *meml;
 extern struct SheetControl *scl;
-/*struct BootInfo *binfo=(struct BootInfo *) 0x00000ff0;char s[128];
-sprintf (s,"12");
-putStrOnSrn(binfo,0,200,1,s);while (1);*/
+/*struct BootInfo *binfo=(struct BootInfo *) 0x00000ff0;char s[128];sprintf (s,"12");putStrOnSrn(binfo,0,200,1,s);while (1);*/
 /*struct BootInfo *binfo;
 struct MemoryList *meml;
 struct SheetControl *scl;*/ 
