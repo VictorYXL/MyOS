@@ -17,6 +17,6 @@ struct Command
 	char par[MAXCOMMANDCOUNT][MAXCOMMANDLENGTH];
 };
 extern struct Keyboard keyboard;
-
+extern struct Window window;
 void analyseCommand(char *commandString,struct Command *command);
 void consoleTask_Main(struct Task *task);

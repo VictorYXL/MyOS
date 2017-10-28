@@ -1,4 +1,3 @@
-
 #pragma once
 #define MAXSHEET 256 
 #define SHEETFREE 0

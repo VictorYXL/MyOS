@@ -109,7 +109,7 @@ void HariMain()
 	setBufInSheet(sht_mouse,mousebuf,16,16,99);
 	initMouseCursor(sht_mouse);
 	slideSheet(sht_mouse, mdec.x, mdec.y);
-	setHeightSheet(sht_mouse,3); 
+	setHeightSheet(sht_mouse,255); 
 	
 	//显示基本信息 
 	char str[128]; 
@@ -124,29 +124,27 @@ void HariMain()
 	//初始化多任务
 	initTaskCTL();
 	
-	
 	//设定主任务
 	struct Task *mainTask;
 	mainTask=getMainTask();
 	
 	//初始化焦点，开始焦点为Console任务 
-	window.focus=1;
-	window.winCount=1;
+	initWindow();
+	
 	//定义Console任务
 	struct Task *consoleTask;
 	consoleTask=allocTask();
-	initTask(consoleTask,(int)&consoleTask_Main,window.winCount);
-	sprintf (window.winName[window.winCount],"Console");
+	initTask(consoleTask,(int)&consoleTask_Main);
+	createWindow(consoleTask,"Console");
 	runTask(consoleTask);
-	
-	
+	while(1);
 	//定义calculator任务
-	struct Task *calculatorTask;
+	/*struct Task *calculatorTask;
 	calculatorTask=allocTask();
 	window.winCount++;
 	initTask(calculatorTask,(int)&calculatorTask_Main,window.winCount);
 	sprintf (window.winName[window.winCount],"Calculator");
-	runTask(calculatorTask);
+	runTask(calculatorTask);*/ 
 	
 	int flag;
 	keyboard.isShift=0;
@@ -154,6 +152,12 @@ void HariMain()
 	while(1)
 	{
 		flag=0;
+		if (window.isChanged)
+		{
+			sprintf (str,"Focus: %s",window.winName[window.focus]);//,window.focus,window.winCount,taskctl->now,taskctl->runningCount,taskctl->runningCount);
+			putStrAndBackOnSht(sht_back,0,1*16,LIGHTRED,LIGHTBLUE,str,40);
+			window.isChanged=0;
+		}
 		//检查各类中断 
 		io_cli();
 		if (getBuffer(&allBuf.key,&data))
@@ -167,10 +171,9 @@ void HariMain()
 			switch (data)
 			{
 				case 0x0f://Tab键
-					window.focus%=window.winCount;
 					window.focus++; 
-					sprintf (str,"Focus: %s",window.winName[window.focus]);
-					putStrAndBackOnSht(sht_back,0,1*16,LIGHTRED,LIGHTBLUE,str,40);
+					window.focus%=window.winCount;
+					window.isChanged=1;
 					break;
 				case 0x2a:
 				case 0x36://Shift按住 
@@ -181,7 +184,7 @@ void HariMain()
 					keyboard.isShift=0;
 					break;
 				default://剩余键盘动作 传给子任务 
-					putBuffer(&taskctl->tasks0[window.focus].bufAll.key,data);
+					putBuffer(&taskctl->tasks[1+window.focus]->bufAll.key,data);//主任务没有窗口，故窗口号+1=任务号 
 					break;
 			}
 			/*if (window.focus==0)
@@ -237,12 +240,13 @@ void HariMain()
 				slideSheet(sht_mouse,mdec.x,mdec.y);
 				
 				//剩余鼠标动作传给子任务 
+				//主任务没有窗口，故图层号+1=窗口号+1=任务号 
 				if (mdec.lbtn)
-					putBuffer(&taskctl->tasks0[window.focus].bufAll.mouse,0);
+					putBuffer(&taskctl->tasks[window.focus+1]->bufAll.mouse,0);
 				else if (mdec.mbtn)
-					putBuffer(&taskctl->tasks0[window.focus].bufAll.mouse,1);
+					putBuffer(&taskctl->tasks[window.focus+1]->bufAll.mouse,1);
 				else if (mdec.rbtn)
-					putBuffer(&taskctl->tasks0[window.focus].bufAll.mouse,2);
+					putBuffer(&taskctl->tasks[window.focus+1]->bufAll.mouse,2);
 				
 			}
 		}

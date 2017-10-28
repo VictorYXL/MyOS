@@ -4,6 +4,7 @@
 #include"memory.h"
 #include"buffer.h"
 #include"mtask.h"
+#include"stdio.h"
 struct TaskCTL *taskctl;
 struct Window window;
 void initTaskCTL()
@@ -65,7 +66,7 @@ struct Task *allocTask()
 	}
 	return 0;
 }
-void initTask(struct Task *task,int eip,int winID)//,unsigned char *keyb,unsigned char *mouseb)
+void initTask(struct Task *task,int eip)//,unsigned char *keyb,unsigned char *mouseb)
 {
 	task->tss.esp=allocMem_4k(64*1024)+64*1024-8;//栈底指针为内存的末尾·为了让地址不超过范围：sht_back为esp+4到esp+8 
 	task->tss.eip=eip;
@@ -78,7 +79,7 @@ void initTask(struct Task *task,int eip,int winID)//,unsigned char *keyb,unsigne
 	*((int *)(task->tss.esp+4)) = (int)task;//压入栈，当作函数的参数 
 	
 	//设定ID 
-	task->winID=winID;
+	task->winID=window.winCount;
 	
 	//键盘鼠标缓冲区
 	unsigned char *keyb=(unsigned char *)allocMem(32);
@@ -105,7 +106,7 @@ void switchTask()
 		farjmp(0,taskctl->tasks[taskctl->now]->sel);
 	}
 }
-void sleepTask(struct Task *task)
+void deleteTask(struct Task *task)
 {
 	int i;
 	char ts=0;
@@ -127,7 +128,8 @@ void sleepTask(struct Task *task)
 		taskctl->runningCount--;
 		for (;i<taskctl->runningCount;i++)
 			taskctl->tasks[i]=taskctl->tasks[i+1];
-		task->flags=TASK_ALLOCED;
+		task->flags=TASK_UNALLOCED;
+		
 		
 		//任务切换 
 		if (ts!=0)
@@ -136,5 +138,34 @@ void sleepTask(struct Task *task)
 				taskctl->now=0;
 			farjmp(0,taskctl->tasks[taskctl->now]->sel);
 		}
+		
 	}
+}
+
+void initWindow()
+{
+	window.focus=0;
+	window.winCount=0;
+	window.isChanged=1; 
+}
+void createWindow(struct Task *task,char *name)
+{
+	sprintf (window.winName[window.winCount],"%s",name);	
+	window.focus=window.winCount;
+	window.winCount++;
+	window.isChanged=1;
+	
+}
+void deleteWindow(struct Task *task)
+{
+	int i;
+	//关闭窗口，切换焦点
+	window.winCount--;
+	for (i=task->winID;i<window.winCount;i++) 
+		sprintf(window.winName[i],"%s",window.winName[i+1]);
+	for (i=0;i<taskctl->runningCount;i++) 
+		if (taskctl->tasks[i]->winID>task->winID)
+			taskctl->tasks[i]->winID--;
+	window.focus=0;
+	window.isChanged=1;
 }

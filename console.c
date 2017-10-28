@@ -8,6 +8,7 @@
 #include"keyboard.h"
 #include"mouse.h" 
 #include"console.h"
+#include"calculator.h" 
 #include<stdio.h>
 #include<string.h>
 //将字符串解析成命令 
@@ -67,19 +68,19 @@ void consoleTask_Main(struct Task *task)
 	setTimer(timerCur,50);
 
 	//显示窗口
-	struct Sheet *sht_window;
-	unsigned char *buf_window;
-	sht_window=allocSheet();
-	buf_window=(unsigned char *)allocMem_4k(200*68);//申请内存空间 
-	setBufInSheet(sht_window,buf_window,200,68,-1);
-	makeWindow(sht_window,200,68,"Console");
-	putStrOnSht(sht_window,16+0*8,28+0*16,BLACK,"Welcome to YangXL OS!");
-	slideSheet(sht_window,280,72);
-	setHeightSheet(sht_window,2);
-	
+	struct Sheet *consoleSheet;
+	unsigned char *windowBuffer;
+	consoleSheet=allocSheet();
+	windowBuffer=(unsigned char *)allocMem_4k(200*68);//申请内存空间 
+	setBufInSheet(consoleSheet,windowBuffer,200,68,-1);
+	makeWindow(consoleSheet,200,68,"Console");
+	putStrOnSht(consoleSheet,16+0*8,28+0*16,BLACK,"Welcome to YangXL OS!");
+	slideSheet(consoleSheet,280,72);
+	setHeightSheet(consoleSheet,254);
+	while(1);
 	//输入的信息 
 	char curInput[128];
-	int curPos=0;//光标 
+	int curPosX=0,length=0;//光标 
 	unsigned char data;
 	struct Command command;//命令 
 	char str[128];
@@ -89,8 +90,8 @@ void consoleTask_Main(struct Task *task)
 		flag=0; 
 		if (window.focus!=task->winID)//焦点不在，取消光标 
 		{
-			boxfillOnSht(sht_window,16+8*curPos,44,8,15,WHITE);
-			refreshSubInSheet(sht_window,16+8*curPos,44,8,15); 
+			boxfillOnSht(consoleSheet,16+8*curPosX,44,8,15,WHITE);
+			refreshSubInSheet(consoleSheet,16+8*curPosX,44,8,15); 
 			continue;
 		}else if (timerCur->flag==TIMER_ALLOCED)//重新获得焦点，重启光标 
 		{
@@ -104,32 +105,59 @@ void consoleTask_Main(struct Task *task)
 			//键盘 
 			io_sti();
 			flag=1;
-			if (data<0x80 && keyboard.keyTable[data]>0 && curPos<=20)//字母，数字 
-			{
-				curInput[curPos++] = keyboard.keyTable[data+keyboard.isShift*0x80];
-				curInput[curPos] = '\0';
-			}else switch (data)
+			switch (data)
 			{
 				case 0x0e://退格键 
-					if (curPos>0)
-						curInput[--curPos] = '\0';
-					break; 
+					if (curPosX>0)
+					{
+						curPosX--;
+						length--; 
+						for (int j=curPosX;j<=length;j++)
+							curInput[j]=curInput[j+1];
+						curInput[length] = '\0';
+					} 
+					break;
+				case 0x4b:
+					if (curPosX>0)
+						curPosX--;
+					break;
+				case 0x4d:
+					if (curPosX<length)
+						curPosX++;
+					break;
 				case 0x1c://回车键 
 					analyseCommand(curInput,&command);
 					curInput[0]='\0';
-					curPos=0;
-					/*sprintf (str,"%d",command.commandType);
-					for (int i=0;i<command.parCount;i++)
+					curPosX=0;
+					length=0;
+					switch (command.commandType) 
 					{
-						sprintf (str,"%s_%s",str,command.par[i]);
+						case Calculator:
+						{
+							//运行calculator任务
+							struct Task *calculatorTask; 
+							calculatorTask=allocTask();		
+							initTask(calculatorTask,(int)&calculatorTask_Main);
+							createWindow(calculatorTask,"Calculator");
+							runTask(calculatorTask);
+							break;
+						}
 					}
-					putStrAndBackOnSht(sht_window,16,28,BLACK,WHITE,str,22);*/
 					break;
 				default:
+					if (data<0x80 && keyboard.keyTable[data]>0 && curPosX<=20)//字母，数字 
+					{
+						curInput[curPosX++] = keyboard.keyTable[data+keyboard.isShift*0x80];
+						if (curPosX>length)
+						{
+							curInput[curPosX] = '\0';
+							length=curPosX;
+						}
+					}
 					break;
 			}
 			sprintf (str,"%s",curInput);
-			putStrAndBackOnSht(sht_window,16,44,BLACK,WHITE,str,22);
+			putStrAndBackOnSht(consoleSheet,16,44,BLACK,WHITE,str,22);
 		}
 		if (getBuffer(&task->bufAll.mouse,&data))
 		{
@@ -137,8 +165,8 @@ void consoleTask_Main(struct Task *task)
 			flag=2;
 			switch(data)
 			{
-				case 2:
-					slideSheet(sht_window,mdec.x,mdec.y);
+				case 0:
+					slideSheet(consoleSheet,mdec.x,mdec.y);
 					break;
 			}
 		}
@@ -150,14 +178,14 @@ void consoleTask_Main(struct Task *task)
 			{
 			case 0:
 				initTimer(timerCur,&bufferTime,1);
-				boxfillOnSht(sht_window,16+8*curPos,44,8,15,WHITE);
-				refreshSubInSheet(sht_window,16+8*curPos,44,8,15);   
+				boxfillOnSht(consoleSheet,16+8*curPosX,44,8,15,WHITE);
+				refreshSubInSheet(consoleSheet,16+8*curPosX,44,8,15);   
 				setTimer(timerCur,50);
 				break;
 			case 1:
 				initTimer(timerCur,&bufferTime,0);
-				boxfillOnSht(sht_window,16+8*curPos,44,8,15,BLACK);
-				refreshSubInSheet(sht_window,16+8*curPos,44,8,15);
+				boxfillOnSht(consoleSheet,16+8*curPosX,44,8,15,BLACK);
+				refreshSubInSheet(consoleSheet,16+8*curPosX,44,8,15);
 				setTimer(timerCur,50);
 				break; 
 			}
