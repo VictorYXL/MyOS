@@ -4,192 +4,192 @@
 ;[FORMAT "WCOFF"]				; nasm -f coff
 [BITS 32]						;		
 
-	GLOBAL	_io_hlt,_write_mem8,_io_cli,_io_sti,_io_stihlt
-	GLOBAL	_io_in8,_io_in16,_io_in32,_io_out8,_io_out16,_io_out32
-	GLOBAL  _io_load_eflags,_io_store_eflags
-	GLOBAL 	_load_gdtr,_load_idtr
-	GLOBAL	_nsm_inthandler20,_nsm_inthandler21,_nsm_inthandler27,_nsm_inthandler2c
-	GLOBAL	_load_cr0,_store_cr0
+GLOBAL	_io_hlt,_write_mem8,_io_cli,_io_sti,_io_stihlt
+GLOBAL	_io_in8,_io_in16,_io_in32,_io_out8,_io_out16,_io_out32
+GLOBAL  _io_load_eflags,_io_store_eflags
+GLOBAL 	_load_gdtr,_load_idtr
+GLOBAL	_nsm_inthandler20,_nsm_inthandler21,_nsm_inthandler27,_nsm_inthandler2c
+GLOBAL	_load_cr0,_store_cr0
 	
-	EXTERN	_inthandler20,_inthandler21,_inthandler27,_inthandler2c
+EXTERN	_inthandler20,_inthandler21,_inthandler27,_inthandler2c
+
 [SECTION .text]					;
 
 _io_hlt:						;void io_hlt(void)		
-	HLT							;使操作系统交出CPU控制权
-	RET			
+HLT								;使操作系统交出CPU控制权
+RET			
 	
 _write_mem8:					;void write_mem8(int addr,int data) 向指定地址写入int，参数传递使用栈的方式，ESP为栈顶指针
-	MOV	ECX,[ESP+4]				;第n个参数的地址为ESP+n*4(4是由于我们采用32位模式，一次输入4字节)
-	MOV AL,[ESP+8]
-	MOV	[ECX],AL
-	RET
+MOV	ECX,[ESP+4]					;第n个参数的地址为ESP+n*4(4是由于我们采用32位模式，一次输入4字节)
+MOV AL,[ESP+8]
+MOV	[ECX],AL
+RET
 	
 _io_cli:						;void io_cli(void)
-	CLI							;不允许中断 
-	RET
+CLI								;不允许中断 
+RET
 	
 _io_sti:						;void io_cli(void)
-	STI							;允许中断 
-	RET
+STI								;允许中断 
+RET
 	
 _io_stihlt:						;void io_cli(void)
-	STI
-	HLT
-	RET
+STI
+HLT
+RET
 	
 _io_in8:						;int io_in8(int port)
-	MOV EDX,[ESP+4]
-	MOV EAX,0
-	IN AL,DX					;IN 读取设备对应端口的电气信息 IN AL/AX/EAX port
-	RET
+MOV EDX,[ESP+4]
+MOV EAX,0
+IN AL,DX						;IN 读取设备对应端口的电气信息 IN AL/AX/EAX port
+RET
 
 _io_in16:						;int io_in16(int port)
-	MOV EDX,[ESP+4]
-	MOV EAX,0
-	IN AX,DX					
-	RET
+MOV EDX,[ESP+4]
+MOV EAX,0
+IN AX,DX					
+RET
 
 _io_in32:						;int io_in32(int port)
-	MOV EDX,[ESP+4]
-	MOV EAX,0
-	IN EAX,DX				
-	RET
+MOV EDX,[ESP+4]
+MOV EAX,0
+IN EAX,DX				
+RET
 
 _io_out8:						;int io_out8(int port,int data)
-	MOV EDX,[ESP+4]				
-	MOV AL,[ESP+8]
-	OUT DX,AL					;OUT 向设备对应端口写入电气信息 OUT port AL/AX/EAX
-	RET
+MOV EDX,[ESP+4]				
+MOV AL,[ESP+8]
+OUT DX,AL						;OUT 向设备对应端口写入电气信息 OUT port AL/AX/EAX
+RET
 	
 _io_out16:						;int io_out16(int port,int data)
-	MOV EDX,[ESP+4]				
-	MOV AX,[ESP+8]
-	OUT DX,AX	
-	RET
+MOV EDX,[ESP+4]				
+MOV AX,[ESP+8]
+OUT DX,AX	
+RET
 	
 _io_out32:						;int io_out32(int port,int data)
-	MOV EDX,[ESP+4]				
-	MOV EAX,[ESP+8]
-	OUT DX,EAX	
-	RET
+MOV EDX,[ESP+4]				
+MOV EAX,[ESP+8]
+OUT DX,EAX	
+RET
 	
 _io_load_eflags:				;int io_load_eflags(void)
-	PUSHFD						;按dword格式push  eflags
-	POP EAX
-	RET
+PUSHFD							;按dword格式push  eflags
+POP EAX
+RET
 
 _io_store_eflags:				;int io_store_eflags(int eflags)
-	MOV EAX,[ESP+4]
-	PUSH EAX					
-	POPFD 						;按dword格式pop  eflags
-	RET
+MOV EAX,[ESP+4]
+PUSH EAX					
+POPFD	 						;按dword格式pop  eflags
+RET
 	
 ;GDTR有6个字节，后两个字节表示段上限，前四个字节为段表开始地址
-_load_gdtr:					;void load_gdtr(int limit,int addr)
-	MOV AX,[ESP+4]
-	MOV [ESP+6],AX
-	LGDT [ESP+6]
-	RET
+_load_gdtr:						;void load_gdtr(int limit,int addr)
+MOV AX,[ESP+4]
+MOV [ESP+6],AX
+LGDT [ESP+6]
+RET
 
-_load_idtr:					;void load_idtr(int limit,int addr)
-	MOV AX,[ESP+4]
-	MOV [ESP+6],AX
-	LIDT [ESP+6]
-	RET
+_load_idtr:						;void load_idtr(int limit,int addr)
+MOV AX,[ESP+4]
+MOV [ESP+6],AX
+LIDT [ESP+6]
+RET
 
 _nsm_inthandler20:
-	;保护现场 
-	PUSH ES
-	PUSH DS
-	PUSHAD					;PUSH EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
+;保护现场 
+PUSH ES
+PUSH DS
+PUSHAD							;PUSH EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
 	
-	;中断处理 
-	MOV EAX,ESP				;汇编中调用C程序，将参数依次压入栈中（左边的在栈底） 
-	PUSH EAX
-	MOV AX,SS
-	MOV DS,AX
-	MOV ES,AX
-	CALL _inthandler20
-	POP EAX
-	
-	;恢复现场
-	POPAD
-	POP DS
-	POP ES
-	
-	IRETD
-	
+;中断处理 
+MOV EAX,ESP						;汇编中调用C程序，将参数依次压入栈中（左边的在栈底） 
+PUSH EAX
+MOV AX,SS
+MOV DS,AX
+MOV ES,AX
+CALL _inthandler20
+POP EAX
+
+;恢复现场
+POPAD
+POP DS
+POP ES
+
+IRETD
+
 _nsm_inthandler21:
-	;保护现场 
-	PUSH ES
-	PUSH DS
-	PUSHAD					;PUSH EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
-	
-	;中断处理 
-	MOV EAX,ESP				;汇编中调用C程序，将参数依次压入栈中（左边的在栈底） 
-	PUSH EAX
-	MOV AX,SS
-	MOV DS,AX
-	MOV ES,AX
-	CALL _inthandler21
-	POP EAX
-	
-	;恢复现场
-	POPAD
-	POP DS
-	POP ES
-	
-	IRETD
+;保护现场 
+PUSH ES
+PUSH DS
+PUSHAD							;PUSH EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
 
+;中断处理 
+MOV EAX,ESP						;汇编中调用C程序，将参数依次压入栈中（左边的在栈底） 
+PUSH EAX
+MOV AX,SS
+MOV DS,AX
+MOV ES,AX
+CALL _inthandler21
+POP EAX
+
+;恢复现场
+POPAD
+POP DS
+POP ES
+
+IRETD
 _nsm_inthandler27:
-	;保护现场 
-	PUSH ES
-	PUSH DS
-	PUSHAD					;PUSH EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
-	
-	;中断处理 
-	MOV EAX,ESP				;汇编中调用C程序，将参数依次压入栈中（左边的在栈底） 
-	PUSH EAX
-	MOV AX,SS
-	MOV DS,AX
-	MOV ES,AX
-	CALL _inthandler27
-	POP EAX
-	
-	;恢复现场
-	POPAD
-	POP DS
-	POP ES
-	
-	IRETD
-	
-_nsm_inthandler2c:
-	;保护现场 
-	PUSH ES
-	PUSH DS
-	PUSHAD					;PUSH EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
-	
-	;中断处理 
-	MOV EAX,ESP				;汇编中调用C程序，将参数依次压入栈中（左边的在栈底） 
-	PUSH EAX
-	MOV AX,SS
-	MOV DS,AX
-	MOV ES,AX
-	CALL _inthandler2c
-	POP EAX
-	
-	;恢复现场
-	POPAD
-	POP DS
-	POP ES
-	
-	IRETD
-	
-_load_cr0:					;int load_cr0(void)
-	MOV EAX,CR0;
-	RET
+;保护现场 
+PUSH ES
+PUSH DS
+PUSHAD							;PUSH EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
 
-_store_cr0:					;store_cr0(int cr0)
-	MOV EAX,[ESP+4]
-	MOV CR0,EAX
-	RET
+;中断处理 
+MOV EAX,ESP						;汇编中调用C程序，将参数依次压入栈中（左边的在栈底） 
+PUSH EAX
+MOV AX,SS
+MOV DS,AX
+MOV ES,AX
+CALL _inthandler27
+POP EAX
+
+;恢复现场
+POPAD
+POP DS
+POP ES
+
+IRETD
+
+_nsm_inthandler2c:
+;保护现场 
+PUSH ES
+PUSH DS
+PUSHAD							;PUSH EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
+
+;中断处理 
+MOV EAX,ESP						;汇编中调用C程序，将参数依次压入栈中（左边的在栈底） 
+PUSH EAX
+MOV AX,SS
+MOV DS,AX
+MOV ES,AX
+CALL _inthandler2c
+POP EAX
+
+;恢复现场
+POPAD
+POP DS
+POP ES
+
+IRETD
+	
+_load_cr0:						;int load_cr0(void)
+MOV EAX,CR0;
+RET
+
+_store_cr0:						;store_cr0(int cr0)
+MOV EAX,[ESP+4]
+MOV CR0,EAX
+RET

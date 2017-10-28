@@ -196,16 +196,16 @@ void make_window(struct Sheet *sht,int xsize,int ysize,char *title)
 		};
 	int x, y;
 	char c;
-	boxfill_sht(sht, 0,         0,         xsize ,1        , LIGHTGRAY);
-	boxfill_sht(sht, 1,         1,         xsize - 2, 1        , WHITE);
-	boxfill_sht(sht, 0,         0,         1,         ysize , LIGHTGRAY);
-	boxfill_sht(sht, 1,         1,         1,         ysize - 2, WHITE);
-	boxfill_sht(sht, xsize - 2, 1,         1,		 ysize - 2, DULLGRAY);
-	boxfill_sht(sht, xsize - 1, 0,         1, ysize, BLACK);
-	boxfill_sht(sht, 2,         2,         xsize - 4, ysize - 4, LIGHTGRAY);
-	boxfill_sht(sht, 3,         3,         xsize - 6, 18       , DULLINDIGO);
-	boxfill_sht(sht, 1,         ysize - 2, xsize - 2, 1, DULLGRAY);
-	boxfill_sht(sht, 0,         ysize - 1, xsize, 1, BLACK);
+	boxfill_sht(sht, 0,         0,         xsize ,		1, 			LIGHTGRAY);
+	boxfill_sht(sht, 1,         1,         xsize - 2, 	1, 			WHITE);
+	boxfill_sht(sht, 0,         0,         1,     		ysize , 	LIGHTGRAY);
+	boxfill_sht(sht, 1,         1,         1,        	ysize - 2, 	WHITE);
+	boxfill_sht(sht, xsize - 2, 1,         1,		 	ysize - 2, 	DULLGRAY);
+	boxfill_sht(sht, xsize - 1, 0,         1, 			ysize, 		BLACK);
+	boxfill_sht(sht, 2,         2,         xsize - 4, 	ysize - 4, 	WHITE);
+	boxfill_sht(sht, 3,         3,         xsize - 6, 	18, 		DULLINDIGO);
+	boxfill_sht(sht, 1,         ysize - 2, xsize - 2, 	1, 			DULLGRAY);
+	boxfill_sht(sht, 0,         ysize - 1, xsize, 		1,	 		BLACK);
 	putstr_sht(sht,16, 4, WHITE, title);
 	for (y = 0; y < 14; y++) 
 	{

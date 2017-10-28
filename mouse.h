@@ -8,6 +8,7 @@ struct Mouse_Dec
 	int status;
 	int dx,dy;
 	int lbtn,rbtn,mbtn;
+	int x,y;
 };
 
 void enable_mouse(struct Mouse_Dec *mdec);

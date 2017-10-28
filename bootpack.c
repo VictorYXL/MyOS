@@ -45,14 +45,15 @@ void HariMain()
 	//先初始化鼠标控制电路（隐藏在键盘控制电路里）
 	//再激活鼠标
 	struct Mouse_Dec mdec;
-	int mx=100,my=100;
+	mdec.x=100;
+	mdec.y=100;
 	init_keyboard();//先初始化键盘控制电路
 	enable_mouse(&mdec);//再激活鼠标
 	
 	//初始化屏幕 
 	struct BootInfo *binfo=(struct BootInfo *) BOOTADDR;//屏幕长宽，图像缓冲区起始位置
 	init_palette();//设定调色板 
-	putstr_srn(binfo,0,20,LIGHTRED,"Welcome To MyOS");
+	putstr_srn(binfo,0,20,LIGHTRED,"Welcome To my OS");
 	putstr_srn(binfo,0,50,LIGHTRED,"Check the memory now...");
 
 	
@@ -63,6 +64,21 @@ void HariMain()
 	//size=memtest(0x00400000,0xbfffffff);//内存测试 
 	mem_free(meml,0x00001000,0x0009e000);
 	mem_free(meml,0x00400000,size-0x00400000);
+	
+	//初始化键盘数据
+	static char keyTable[0x80] =
+	{
+ 		 0 , 0 ,'1','2','3','4','5','6','7','8','9','0','-','^', 0 , 0 ,
+		'Q','W','E','R','T','Y','U','I','O','P','[',']', 0 , 0 ,'A','S',
+		'D','F','G','H','J','K','L',';','\'','`', 0 ,'\\','Z','X','C','V',
+		'B','N','M',',','.','/', 0 ,'*', 0 ,' ', 0 , 0 , 0 , 0 , 0 , 0 ,
+ 		 0 , 0 , 0 , 0 , 0 , 0 , 0 ,'7','8','9','-','4','5','6','+','1',
+		'2','3','0','.', 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,
+ 		 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,
+ 		 0 , 0 ,'_', 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ,'\\', 0 , 0 
+	};
+	char curInput[128];
+	int curPos = 0;
 
 	//初始化图层表
 	struct SheetControl *scl;
@@ -90,7 +106,7 @@ void HariMain()
 	buf_window=(unsigned char *)mem_alloc_4k(meml,160*68);//申请内存空间 
 	sheet_setbuf(sht_window,buf_window,160,68,-1);
 	make_window(sht_window,160,68,"window");
-	putstr_sht(sht_window,16,28,BLACK,"Welcome to My OS");
+	putstr_sht(sht_window,16,28,BLACK,"Welcome to my OS");
 	sheet_slide(scl,sht_window,80,72);
 	sheet_updown(scl,sht_window,1);
 	
@@ -100,7 +116,7 @@ void HariMain()
 	sht_mouse=sheet_alloc(scl);
 	sheet_setbuf(sht_mouse,mousebuf,16,16,99);
 	init_mouse_cursor(sht_mouse);
-	sheet_slide(scl, sht_mouse, mx, my);
+	sheet_slide(scl, sht_mouse, mdec.x, mdec.y);
 	sheet_updown(scl,sht_mouse,2);
 	sheet_refreshAll(scl);//所有图层准备 
 	
@@ -111,13 +127,6 @@ void HariMain()
 	while(1)
 	{
 		count++;
-		//一个显示时间 
-		if (timerctl.count>second*100+99)
-		{
-			second=timerctl.count/100; 
-			sprintf (str,"%03d",second);
-			putstr_back_sht(scl,sht_window,16,28,BLACK,LIGHTGRAY,str,16);
-		} 
 		//检查各类中断 
 		io_cli();
 		if (buffer_get(&(allbuf.key),&data))
@@ -126,7 +135,23 @@ void HariMain()
 			io_sti();
 			sprintf (str,"Key:%x",data);
 			putstr_back_sht(scl,sht_back,0,1*16,LIGHTRED,LIGHTBLUE,str,6);//显示键盘信息 
-		}else if (buffer_get(&allbuf.mouse,&data))
+			
+			if (data<0x80 && keyTable[data]>0)
+			{
+				curInput[curPos++] = keyTable[data];
+				curInput[curPos] = '\0';
+				sprintf (str,"%s",curInput);
+				putstr_back_sht(scl,sht_window,16,44,BLACK,WHITE,str,16);
+			}else if (data==0x0e)
+			{
+				if (curPos>0)
+					curInput[--curPos] = '\0';
+				sprintf (str,"%s",curInput);
+				putstr_back_sht(scl,sht_window,16,44,BLACK,WHITE,str,16);
+			}
+			
+		}
+		if (buffer_get(&allbuf.mouse,&data))
 		{
 			//鼠标 
 			io_sti();
@@ -135,48 +160,46 @@ void HariMain()
 				sprintf (str,"Mouse:");
 				if (mdec.lbtn)
 					sprintf (str,"%sL",str);
-				if (mdec.mbtn)
+				if (mdec.mbtn)  
 					sprintf (str,"%sM",str);				
 				if (mdec.rbtn)
 					sprintf (str,"%sR",str);
 				
-				mx+=mdec.dx;
-				if (mx<0)
-					mx=0;
-				if (mx>binfo->scrnx-1)
-					mx=binfo->scrnx-1;
-				my+=mdec.dy;
-				if (my<0)
-					my=0;
-				if (my>binfo->scrny-1)
-					my=binfo->scrny-1;
+				mdec.x+=mdec.dx;
+				if (mdec.x<0)
+					mdec.x=0;
+				if (mdec.x>binfo->scrnx-1)
+					mdec.x=binfo->scrnx-1;
+				mdec.y+=mdec.dy;
+				if (mdec.y<0)
+					mdec.y=0;
+				if (mdec.y>binfo->scrny-1)
+					mdec.y=binfo->scrny-1;
 				
-				sprintf (str,"%s (%d,%d,%d,%d)",str,mx,my,mdec.dx,mdec.dy);
+				sprintf (str,"%s (%d,%d,%d,%d)",str,mdec.x,mdec.y,mdec.dx,mdec.dy);
 				putstr_back_sht(scl,sht_back,0,2*16,LIGHTRED,LIGHTBLUE,str,25);//显示键盘信息 
-				sheet_slide(scl,sht_mouse,mx,my);
+				sheet_slide(scl,sht_mouse,mdec.x,mdec.y);
+				
 			}
-		}else if (buffer_get(&timeBuffer,&data))
+		}
+		if (buffer_get(&timeBuffer,&data))
 		{
 			//定时器 
 			io_sti();
 			switch (data)//为了区分不同的定时器 
 			{
-			case 10://timer1隐藏光标 
+			case 10://timer1显示光标 
 				initTimer(timer1,&timeBuffer,11);
-				boxfill_sht(sht_back,0,3*16,8,15,LIGHTGRAY);
-				sheet_refreshSheetSub(scl,sht_back,0,3*16,8,15);
+				boxfill_sht(sht_window,16+8*curPos,44,8,15,BLACK);
+				sheet_refreshSheetSub(scl,sht_window,16+8*curPos,44,8,15);   
 				setTimer(timer1,50);
 				break;
-			case 11://timer1显示光标 
+			case 11://timer1隐藏光标 
 				initTimer(timer1,&timeBuffer,10);
-				boxfill_sht(sht_back,0,3*16,8,15,LIGHTBLUE);
-				sheet_refreshSheetSub(scl,sht_back,0,3*16,8,15);
+				boxfill_sht(sht_window,16+8*curPos,44,8,15,WHITE);
+				sheet_refreshSheetSub(scl,sht_window,16+8*curPos,44,8,15);
 				setTimer(timer1,50);
 				break; 
-			case 20://timer2
-				sprintf (str,"5S:%010d",count);
-				putstr_back_sht(scl,sht_window,16,44,BLACK,LIGHTGRAY,str,16);
-				break;
 			}
 		}
 		else io_sti();
