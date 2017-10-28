@@ -1,5 +1,5 @@
-text size :  23690(0x05C8A)
-data size :   8560(0x02170)
+text size :  25158(0x06246)
+data size :   8736(0x02220)
 bss  size :      0(0x00000)
 
 0x00000000 : (.text)
@@ -106,26 +106,30 @@ bss  size :      0(0x00000)
 0x00003BEC : (.text)
 0x00003BEC : _analyseCommand
 0x00003D9D : _consoleTask_Main
-0x00004440 : (.text)
-0x00004440 : _analysize
-0x000045CF : _calSub
-0x00004A5A : _calculator
-0x00004AD8 : _calculatorTask_Main
-0x0000534C : (.text)
-0x0000534C : _showMemory
-0x00005535 : _memoryListTask_Main
-0x00005788 : (.text)
-0x00005788 : _HariStartup
-0x00005791 : _sprintf
-0x00005791 : (.text)
-0x000057A5 : _strcmp
-0x000057A5 : (.text)
-0x000057CA : _strcpy
-0x000057CA : (.text)
-0x000057E5 : (.text)
-0x00005821 : _strtoul0
-0x000058F4 : (.text)
-0x0000591C : _vsprintf
+0x00004498 : (.text)
+0x00004498 : _analysize
+0x00004627 : _calSub
+0x00004AB2 : _calculator
+0x00004B30 : _calculatorTask_Main
+0x000053A4 : (.text)
+0x000053A4 : _showMemory
+0x0000558D : _memoryListTask_Main
+0x000057E0 : (.text)
+0x000057E0 : _showTask
+0x00005AEF : _taskListTask_Main
+0x00005D44 : (.text)
+0x00005D44 : _HariStartup
+0x00005D4D : _sprintf
+0x00005D4D : (.text)
+0x00005D61 : _strcmp
+0x00005D61 : (.text)
+0x00005D86 : _strcpy
+0x00005D86 : (.text)
+0x00005DA1 : (.text)
+0x00005DDD : _strtoul0
+0x00005EB0 : (.text)
+0x00005ED8 : _vsprintf
+0x00000000 : (.data)
 0x00000000 : (.data)
 0x00000000 : (.data)
 0x00000000 : (.data)
@@ -190,17 +194,21 @@ bss  size :      0(0x00000)
 0x00311D14 : _taskctl
 0x00311E80 : (.data)
 0x00311F00 : (.rdata)
-0x00311F4C : (.rdata$zzz)
-0x00311F60 : (.eh_frame)
-0x00311FC4 : (.rdata)
-0x00311FFC : (.rdata$zzz)
-0x00312010 : (.eh_frame)
-0x003120AC : (.rdata)
-0x003120DC : (.rdata$zzz)
-0x003120F0 : (.eh_frame)
-0x00312150 : (.data)
+0x00311F58 : (.rdata$zzz)
+0x00311F6C : (.eh_frame)
+0x00311FD0 : (.rdata)
+0x00312008 : (.rdata$zzz)
+0x0031201C : (.eh_frame)
+0x003120B8 : (.rdata)
+0x003120E8 : (.rdata$zzz)
+0x003120FC : (.eh_frame)
+0x0031215C : (.rdata)
+0x0031218C : (.rdata$zzz)
+0x003121A0 : (.eh_frame)
+0x00312200 : (.data)
 0x00313B1C : _timerctl
 0x00314430 : _window
+0x00000000 : (.bss)
 0x00000000 : (.bss)
 0x00000000 : (.bss)
 0x00000000 : (.bss)

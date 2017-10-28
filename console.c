@@ -10,6 +10,7 @@
 #include"console.h"
 #include"calculator.h" 
 #include"memorylist.h"
+#include"tasklist.h"
 #include<stdio.h>
 #include<string.h>
 //½«×Ö·û´®½âÎö³ÉÃüÁî 
@@ -158,6 +159,15 @@ void consoleTask_Main(struct Task *task)
 							initTask(memoryListTask,(int)&memoryListTask_Main,"MemoryList",1);
 							createWindow(memoryListTask,"Memory List");
 							runTask(memoryListTask);
+							break;
+						}
+						case TaskList:
+						{
+							struct Task *taskListTask; 
+							taskListTask=allocTask();		
+							initTask(taskListTask,(int)&taskListTask_Main,"MemoryList",1);
+							createWindow(taskListTask,"Task List");
+							runTask(taskListTask);
 							break;
 						}
 					}

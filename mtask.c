@@ -122,11 +122,11 @@ void deleteTask(struct Task *task)
 	char ts=0;
 	if (task->flags==2)
 	{
-		//如果需要休眠正在运行的任务 ，则需要进行任务切换 
+		//如果需要删除正在运行的任务 ，则需要进行任务切换 
 		if (task==taskctl->tasks[taskctl->now])
 			ts=1;
 			
-		//寻找需要休眠的任务 
+		//寻找需要删除的任务 
 		for(i=0;i<taskctl->runningCount;i++) 
 			if (task==taskctl->tasks[i])
 				break;
@@ -134,11 +134,12 @@ void deleteTask(struct Task *task)
 		//修改正在运行的编号
 		if (taskctl->now>i) 
 			taskctl->now--;
-		//删除需要休眠的任务 
+		//删除任务 
 		taskctl->runningCount--;
 		for (;i<taskctl->runningCount;i++)
 			taskctl->tasks[i]=taskctl->tasks[i+1];
 		task->flags=TASK_UNALLOCED;
+		//taskctl->tasks[taskctl->runningCount]->flags=TASK_UNALLOCED;
 		
 		
 		//任务切换 
