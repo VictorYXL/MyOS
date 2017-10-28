@@ -6,6 +6,7 @@
 #include"dsctbl.h" 
 #include"keyboard.h"
 #include"mouse.h"
+#include"memory.h"
 #include<stdio.h>
 void HariMain()
 {
@@ -39,17 +40,20 @@ void HariMain()
 	buffer_init(&allbuf.mouse,128,mouseb);
 	
 
-	/*这里有明显的错误
-	两个缓冲区对应同一块地址。
-	需要解决。
-	如果不能解决，可以考虑改写Buffer，将两个缓冲区写到一起*/
-	//sprintf (str,"(%d) (%d)",&(allbuf.key),&(allbuf.mouse));
-	//putstr(binfo,0,0,LIGHTRED,str);
-	
+
 	char str[60];
 	int i=0;
 	int mx=100,my=100;
-
+	mem_init();
+	/*这里有明显的错误
+	两个缓冲区对应同一块地址。
+	需要解决。
+	如果不能解决，可以考虑改写Buffer，将两个缓冲区写到一起
+	sprintf (str,"(%d) (%d) (%d)",&(allbuf.key),&(allbuf.mouse),meml);
+	putstr(binfo,0,0,LIGHTRED,str);
+	while (1);*/
+	
+	
 	//设定调色板
 	init_palette();
 	//初始化屏幕
@@ -60,13 +64,19 @@ void HariMain()
 	put_block(binfo,mx,my,16,16,mcursor);
 	
 	enable_mouse(&mdec);//再激活鼠标
+	
+	sprintf (str,"%Checking The Memory");
+	putstr(binfo,0,16,LIGHTRED,str);
+	int size=memtest(0x00400000,0xbfffffff)/1024/1024;
+	sprintf (str,"%dMemory:%dM",i,size);
+	putstr(binfo,0,16,LIGHTRED,str);
 	while(1)
 	{
 		io_cli();
 		if (buffer_get(&(allbuf.key),&data))
 		{
 			io_sti();
-			int j=i%10;
+			int j=i%10+1;
 			sprintf (str,"%d) %x",i,data);
 			boxfill(binfo,0,j*16,20*8,16,LIGHTGRAY);
 			putstr(binfo,0,16*j,LIGHTRED,str);
