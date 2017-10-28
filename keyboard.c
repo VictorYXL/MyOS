@@ -1,6 +1,7 @@
 #include"keyboard.h"
 #include"nasmfunc.h"
 #include"buffer.h"
+struct Keyboard keyboard;
 //等待键盘控制电路准备完毕
 void wait_KBC_sendready()
 {

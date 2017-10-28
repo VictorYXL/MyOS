@@ -5,6 +5,7 @@
 #include"buffer.h"
 #include"mtask.h"
 struct TaskCTL *taskctl;
+struct Window window;
 void initTaskCTL()
 {
 	int i=0;

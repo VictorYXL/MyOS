@@ -19,6 +19,9 @@ gcc memory.c -c
 gcc sheet.c -c 
 gcc timer.c -c
 gcc mtask.c -c
+gcc console.c -c
+gcc calculator.c -c
+
 move main.o obj\main.obj
 move graphic.o obj\graphic.obj
 move dsctbl.o obj\dsctbl.obj
@@ -30,12 +33,14 @@ move memory.o obj\memory.obj
 move sheet.o obj\sheet.obj
 move timer.o obj\timer.obj
 move mtask.o obj\mtask.obj
+move console.o obj\console.obj
+move calculator.o obj\calculator.obj
 
-obj2bim @source\obj2bim.rul out:obj\main.bim stack:3136k map:obj\main.map obj\main.obj obj\graphic.obj obj\nasmfunc.obj obj\fontlib.obj obj\dsctbl.obj obj\int.obj obj\buffer.obj obj\keyboard.obj obj\mouse.obj obj\memory.obj obj\sheet.obj obj\timer.obj obj\mtask.obj
+obj2bim @source\obj2bim.rul out:obj\main.bim stack:3136k map:obj\main.map obj\main.obj obj\graphic.obj obj\nasmfunc.obj obj\fontlib.obj obj\dsctbl.obj obj\int.obj obj\buffer.obj obj\keyboard.obj obj\mouse.obj obj\memory.obj obj\sheet.obj obj\timer.obj obj\mtask.obj obj\console.obj obj\calculator.obj
 bim2hrb obj\main.bim obj\main.hrb 0
-copy /B obj\entry.bin+obj\main.hrb obj\entry.sys
+copy /B obj\entry.bin+obj\main.hrb obj\MyOS.sys
 
-edimg.exe   imgin:source\fdimg0at.tek   wbinimg src:obj\IPL.bin len:512 from:0 to:0 copy from:obj\entry.sys   to:@: imgout:MyOS.img
+edimg.exe   imgin:source\fdimg0at.tek   wbinimg src:obj\IPL.bin len:512 from:0 to:0 copy from:obj\MyOS.sys   to:@: imgout:MyOS.img
 copy MyOS.img ..\..\MyOS.img
 
 @pause

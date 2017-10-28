@@ -5,7 +5,8 @@
 #define TASK_UNALLOCED	0
 #define TASK_ALLOCED	1
 #define TASK_USING		2 
- 
+#define MAXWINDOWCOUNT	200
+#define MAXWINDOWNAME	50
 struct TSS
 {
 	int backlink,esp0,ss0,esp1,ss1,esp2,ss2,cr3;	//任务切换中的信息 ，任务切换时不被CPU写入 
@@ -27,10 +28,14 @@ struct TaskCTL
 	struct Task *tasks[MAX_TASKS];	//动态指向任务 
 	struct Task tasks0[MAX_TASKS];	//存储任务 
 };
-
+struct Window
+{
+	int focus,winCount,x;
+	char winName[MAXWINDOWCOUNT][MAXWINDOWNAME];
+};
 extern struct TaskCTL *taskctl;
 extern struct Timer *taskTimer;
-
+extern struct Window window;
 struct Task *getMainTask();
 struct Task *allocTask();
 void initTaskCTL();
