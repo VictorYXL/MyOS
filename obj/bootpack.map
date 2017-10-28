@@ -1,0 +1,18 @@
+text size :     26(0x0001A)
+data size :     72(0x00048)
+bss  size :      0(0x00000)
+
+0x00000024 : (.text)
+0x00000024 : _HariMain
+0x00000034 : _io_hlt
+0x00000034 : (.text)
+0x00000035 : (.text)
+0x00000035 : _HariStartup
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00310000 : (.rdata$zzz)
+0x00310014 : (.eh_frame)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)

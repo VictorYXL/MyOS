@@ -55,7 +55,7 @@ VRAM	EQU		0x0ff8			; グラフィックバッファの開始番地
 
 ; プロテクトモード移行
 
-;[INSTRSET "i486p"]				; 486の命令まで使いたいという記述
+[INSTRSET "i486p"]				; 486の命令まで使いたいという記述
 
 		LGDT	[GDTR0]			; 暫定GDTを設定
 		MOV		EAX,CR0
