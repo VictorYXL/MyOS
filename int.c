@@ -1,14 +1,13 @@
 #include"int.h"
 #include"nasmfunc.h"
-#include"graphic.h"
 #include"buffer.h"
+#include"graphic.h"
 #include<stdio.h>
 /*
 PIC是可编程中断控制器 有两个PIC（主，从）每个PIC有8路IRQ（中断请求） 
 IMR 中断屏蔽器，8位对应8个IRQ信号 是PIC的寄存器 
 io_out8向对应端口写数据 
 */
-struct Buffer buffer;
 void init_pic(void)
 {
 	//禁止所有中断 
@@ -39,11 +38,27 @@ void init_pic(void)
 //键盘中断处理程序 
 void inthandler21(int *esp)
 {
-	struct BootInfo *binfo=(struct BootInfo *) 0x0ff0;	
 	//通知PIC中断已经接受 
+	//键盘中断是IRQ1，向PIC0发送0x(1+60)即可
 	io_out8(PIC0_OCW2,0x61);
 	unsigned char data=io_in8(PORT_KEYDAT);
-	buffer_put(&buffer,data);
+	buffer_put(&allbuf.key,data);
+	return;
+}
+//不明白是干啥的
+void inthandler27(int *esp)
+{
+	io_out8(PIC0_OCW2, 0x67);
+	return;
+}
+
+//鼠标中断处理程序 
+void inthandler2c(int *esp)
+{
+	//鼠标中断是IRQ12，向IRQ0发送2，也要向IRQ1发送4（从PIC的第5个中断）
+	io_out8(PIC1_OCW2,0x64);
+	io_out8(PIC0_OCW2,0x62);
+	unsigned char data=io_in8(PORT_KEYDAT);
+	buffer_put(&allbuf.mouse,data);
 	return;
 } 
-

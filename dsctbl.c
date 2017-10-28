@@ -21,6 +21,8 @@ void init_gdtidt(void)
 	//21号中断，中断处理程序在第二个段的nsm_inthandler21中
 	//第二个段是全局 
 	set_gatedesc(idt+0x21,(int)nsm_inthandler21,2<<3,AR_INTGATE32);
+	set_gatedesc(idt+0x27,(int)nsm_inthandler27,2<<3,AR_INTGATE32);
+	set_gatedesc(idt+0x2c,(int)nsm_inthandler2c,2<<3,AR_INTGATE32);
 	return;
 } 
 void set_segmdesc(struct Segment_Descriptor *sd,unsigned int limit,int base,int ar)

@@ -1,9 +1,9 @@
 ; haribote-os boot asm
 ; TAB=4
 
-BOTPAK	EQU		0x00280000		; bootpackのロード先
-DSKCAC	EQU		0x00100000		; ディスクキャッシュの場所
-DSKCAC0	EQU		0x00008000		; ディスクキャッシュの場所（リアルモード）
+BOTPAK	EQU		0x00280000		; bootpack要放置的位置
+DSKCAC	EQU		0x00100000		; 启动区要放置的位置
+DSKCAC0	EQU		0x00008000		; 磁盘剩余部分要放置的位置
 
 ;获取引导信息
 
@@ -29,112 +29,104 @@ DSKCAC0	EQU		0x00008000		; ディスクキャッシュの場所（リアルモード）
 	INT 0x16
 	MOV [LEDS],AL
 fin:
-
-; PICが一切の割り込みを受け付けないようにする
-;	AT互換機の仕様では、PICの初期化をするなら、
-;	こいつをCLI前にやっておかないと、たまにハングアップする
-;	PICの初期化はあとでやる
-
-		MOV		AL,0xff
+		MOV		AL,0xff			;禁止主PIC的全部中断
 		OUT		0x21,AL
-		NOP						; OUT命令を連続させるとうまくいかない機種があるらしいので
-		OUT		0xa1,AL
+		NOP						;连续OUT可能导致无法运行
+		OUT		0xa1,AL			;禁止从PIC的全部中断
 
-		CLI						; さらにCPUレベルでも割り込み禁止
+		CLI						;禁止CPU级别的中断
 
-; CPUから1MB以上のメモリにアクセスできるように、A20GATEを設定
+; 设定A20GATE，为了使CPU能访问1MB以上内存
 
 		CALL	waitkbdout
 		MOV		AL,0xd1
 		OUT		0x64,AL
 		CALL	waitkbdout
-		MOV		AL,0xdf			; enable A20
+		MOV		AL,0xdf			;向附属端口输出0xdf
 		OUT		0x60,AL
 		CALL	waitkbdout
 
-; プロテクトモード移行
+; 切换到保护模式
 
-;[INSTRSET "i486p"]				; 486の命令まで使いたいという記述
+;[INSTRSET "i486p"]				; 
 
-		LGDT	[GDTR0]			; 暫定GDTを設定
-		MOV		EAX,CR0
-		AND		EAX,0x7fffffff	; bit31を0にする（ページング禁止のため）
-		OR		EAX,0x00000001	; bit0を1にする（プロテクトモード移行のため）
+		LGDT	[GDTR0]			; 设定临时GDT
+		MOV		EAX,CR0			;CR0寄存器，特殊的寄存器
+		AND		EAX,0x7fffffff	; 最高位置0
+		OR		EAX,0x00000001	; 最低位置1
 		MOV		CR0,EAX
 		JMP		pipelineflush
 pipelineflush:
-		MOV		AX,1*8			;  読み書き可能セグメント32bit
+		MOV		AX,1*8			; 所有寄存器都变成0x0008
 		MOV		DS,AX
 		MOV		ES,AX
 		MOV		FS,AX
 		MOV		GS,AX
 		MOV		SS,AX
 
-; bootpackの転送
+; 传送bootpack.hrb
 
-		MOV		ESI,bootpack	; 転送元
-		MOV		EDI,BOTPAK		; 転送先
-		MOV		ECX,512*1024/4
-		CALL	memcpy
+		MOV		ESI,bootpack	;源
+		MOV		EDI,BOTPAK		;目的
+		MOV		ECX,512*1024/4	;传送数据大小（单位双字）
+		CALL	memcpy			;传送函数（注意是CALL而非JMP）
 
-; ついでにディスクデータも本来の位置へ転送
 
-; まずはブートセクタから
+; 传送启动区
 
-		MOV		ESI,0x7c00		; 転送元
-		MOV		EDI,DSKCAC		; 転送先
+		MOV		ESI,0x7c00		;源
+		MOV		EDI,DSKCAC		;目的
 		MOV		ECX,512/4
 		CALL	memcpy
 
-; 残り全部
+;传送剩余磁盘内容(10个柱面*两个磁头*18个扇区)
 
-		MOV		ESI,DSKCAC0+512	; 転送元
-		MOV		EDI,DSKCAC+512	; 転送先
+		MOV		ESI,DSKCAC0+512	;源
+		MOV		EDI,DSKCAC+512	;目的
 		MOV		ECX,0
 		MOV		CL,BYTE [CYLS]
-		IMUL	ECX,512*18*2/4	; シリンダ数からバイト数/4に変換
-		SUB		ECX,512/4		; IPLの分だけ差し引く
+		IMUL	ECX,512*18*2/4	
+		SUB		ECX,512/4		;cyls*512*18*2/4-512/4(除去引导区)
 		CALL	memcpy
 
-; asmheadでしなければいけないことは全部し終わったので、
-;	あとはbootpackに任せる
 
-; bootpackの起動
+
+; bootpack的启动（这段没看懂）
 
 		MOV		EBX,BOTPAK
 		MOV		ECX,[EBX+16]
 		ADD		ECX,3			; ECX += 3;
 		SHR		ECX,2			; ECX /= 4;
-		JZ		skip			; 転送するべきものがない
-		MOV		ESI,[EBX+20]	; 転送元
+		JZ		skip			;Jmup if zero
+		MOV		ESI,[EBX+20]	; 源
 		ADD		ESI,EBX
-		MOV		EDI,[EBX+12]	; 転送先
+		MOV		EDI,[EBX+12]	; 目的
 		CALL	memcpy
 skip:
-		MOV		ESP,[EBX+12]	; スタック初期値
+		MOV		ESP,[EBX+12]	;
 		JMP		DWORD 2*8:0x0000001b
 
 waitkbdout:
 		IN		 AL,0x64
 		AND		 AL,0x02
-		JNZ		waitkbdout		; ANDの結果が0でなければwaitkbdoutへ
+		JNZ		waitkbdout		;
 		RET
 
-memcpy:
+memcpy:							;将内存进行赋值，源地址为ESI，目的地址为EDI，数据长度为ECX
 		MOV		EAX,[ESI]
 		ADD		ESI,4
 		MOV		[EDI],EAX
 		ADD		EDI,4
 		SUB		ECX,1
-		JNZ		memcpy			; 引き算した結果が0でなければmemcpyへ
+		JNZ		memcpy			
 		RET
-; memcpyはアドレスサイズプリフィクスを入れ忘れなければ、ストリング命令でも書ける
 
+;填入地址使GTD能按16位对齐，看不太懂
 		ALIGNB	16
 GDT0:
-		RESB	8				; ヌルセレクタ
-		DW		0xffff,0x0000,0x9200,0x00cf	; 読み書き可能セグメント32bit
-		DW		0xffff,0x0000,0x9a28,0x0047	; 実行可能セグメント32bit（bootpack用）
+		RESB	8				
+		DW		0xffff,0x0000,0x9200,0x00cf	
+		DW		0xffff,0x0000,0x9a28,0x0047	
 
 		DW		0
 GDTR0:

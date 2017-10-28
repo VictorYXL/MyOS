@@ -17,9 +17,9 @@
 #define DULLGRAY 15
 void init_palette();
 void set_palette();
-void boxfill(struct BootInfo *binof,unsigned char c,int x0,int y0,int x1,int y1);
+void boxfill(struct BootInfo *binfo,int x0,int y0,int pxsize,int pysize,unsigned char c);
 void init_screen(struct BootInfo *);
 void putfont8(struct BootInfo *binfo,char *fontlib,int x,int y,char color,char c);
-void put_block(struct BootInfo *binfo,int pxsize,int pysize,int x0,int y0,char *block);
+void put_block(struct BootInfo *binfo,int x0,int y0,int pxsize,int pysize,char *block);
 void putstr(struct BootInfo *binfo,int x,int y,char color,char *str);
 void init_mouse_cursor(char *mouse);

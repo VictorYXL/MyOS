@@ -117,3 +117,47 @@ _nsm_inthandler21:
 	POP ES
 	
 	IRETD
+
+_nsm_inthandler27:
+	;保护现场 
+	PUSH ES
+	PUSH DS
+	PUSHAD					;PUSH EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
+	
+	;中断处理 
+	MOV EAX,ESP				;汇编中调用C程序，将参数依次压入栈中（左边的在栈底） 
+	PUSH EAX
+	MOV AX,SS
+	MOV DS,AX
+	MOV ES,AX
+	CALL _inthandler27
+	POP EAX
+	
+	;恢复现场
+	POPAD
+	POP DS
+	POP ES
+	
+	IRETD
+	
+_nsm_inthandler2c:
+	;保护现场 
+	PUSH ES
+	PUSH DS
+	PUSHAD					;PUSH EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
+	
+	;中断处理 
+	MOV EAX,ESP				;汇编中调用C程序，将参数依次压入栈中（左边的在栈底） 
+	PUSH EAX
+	MOV AX,SS
+	MOV DS,AX
+	MOV ES,AX
+	CALL _inthandler2c
+	POP EAX
+	
+	;恢复现场
+	POPAD
+	POP DS
+	POP ES
+	
+	IRETD

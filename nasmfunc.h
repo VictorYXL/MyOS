@@ -20,3 +20,5 @@ void io_store_eflags(int eflags);
 void load_gdtr(int limit,int addr);
 void load_idtr(int limit,int addr);
 void nsm_inthandler21(void);
+void nsm_inthandler27(void);
+void nsm_inthandler2c(void);

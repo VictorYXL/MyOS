@@ -1,10 +1,10 @@
 #include"nasmfunc.h"
 #include"graphic.h"
-void boxfill(struct BootInfo *binfo,unsigned char c,int x0,int y0,int x1,int y1)
+void boxfill(struct BootInfo *binfo,int x0,int y0,int pxsize,int pysize,unsigned char c)
 {
 	int i,j;
-	for (j=y0;j<=y1;j++)
-		for (i=x0;i<=x1;i++)
+	for (j=y0;j<y0+pysize;j++)
+		for (i=x0;i<x0+pxsize;i++)
 			binfo->vram[j*binfo->scrnx+i]=c;
 }
 
@@ -34,7 +34,9 @@ void putstr(struct BootInfo *binfo,int x,int y,char color,char *str)
 void init_mouse_cursor(char *mouse)
 {
 	//鼠标坐标图
-	static char cursor[16][16] = {
+	static char cursor[18][17] = {
+		"****************",
+		"****************",
 		"**************..",
 		"*OOOOOOOOOOO*...",
 		"*OOOOOOOOOO*....",
@@ -52,9 +54,10 @@ void init_mouse_cursor(char *mouse)
 		"............*OO*",
 		".............***"
 	};
+	//此处无法理解，前两层为何无法显示，故跳过
 	for(int i=0;i<16;i++)
 		for (int j=0;j<16;j++)
-			switch(cursor[i][j])
+			switch(cursor[i+2][j])
 			{
 				case '*':
 					mouse[i*16+j]=BLACK;
@@ -67,11 +70,11 @@ void init_mouse_cursor(char *mouse)
 			}
 }
 
-void put_block(struct BootInfo *binfo,int pxsize,int pysize,int x0,int y0,char *block)
+void put_block(struct BootInfo *binfo,int x0,int y0,int pxsize,int pysize,char *block)
 {
 	for (int y=0;y<pysize;y++)
 		for (int x=0;x<pxsize;x++)
-			if (block[y*pxsize+x]>0)
+			if (block[y*pxsize+x]>=0)
 				binfo->vram[(y0+y)*binfo->scrnx+x0+x]=block[y*pxsize+x];
 }
 
@@ -125,21 +128,23 @@ void init_screen(struct BootInfo *binfo)
 	int y=binfo->scrny;
 	
 	//画任务框
-	boxfill(binfo,4,0,0,x-1,y-29);
-	boxfill(binfo,8,0,y-28,x-1,y-28);
-	boxfill(binfo,8,0,y-27,x-1,y-27);
-	boxfill(binfo,7,0,y-26,x-1,y-1);
+	//void boxfill(struct BootInfo *binfo,unsigned char c,int x0,int y0,int x1,int y1)
+	//boxfill(binfo,4,0,0,x-1,y-29);
+	boxfill(binfo,0,0,x,y-28,4);
+	boxfill(binfo,0,y-28,x,1,8);
+	boxfill(binfo,0,y-27,x,1,8);
+	boxfill(binfo,0,y-26,x,26,7);
 
-	boxfill(binfo,7,3,y-24,59,y-24);
-	boxfill(binfo,7,2,y-24,2,y-4);
-	boxfill(binfo,15,3,y-4,59,y-4);
-	boxfill(binfo,15,59,y-23,59,y-5);
-	boxfill(binfo,0,2,y-3,59,y-3);
-	boxfill(binfo,0,60,y-24,60,y-3);
+	boxfill(binfo,3,y-24,57,1,7);
+	boxfill(binfo,2,y-24,1,21,7);
+	boxfill(binfo,3,y-4,57,1,15);
+	boxfill(binfo,59,y-23,1,19,15);
+	boxfill(binfo,2,y-3,57,1,0);
+	boxfill(binfo,60,y-24,1,22,0);
 
-	boxfill(binfo,15,x-47,y-24,x-4,y-24);
-	boxfill(binfo,15,x-47,y-23,x-47,y-4);
-	boxfill(binfo,7,x-47,y-3,x-4,y-3);
-	boxfill(binfo,7,x-3,y-24,x-3,y-3);
+	boxfill(binfo,x-47,y-24,44,1,15);
+	boxfill(binfo,x-47,y-23,1,20,15);
+	boxfill(binfo,x-47,y-3,44,1,7);
+	boxfill(binfo,x-3,y-24,1,22,7);
 	return;
 }
