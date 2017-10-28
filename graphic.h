@@ -20,4 +20,6 @@ void set_palette();
 void boxfill(unsigned char *vram,int xsize,unsigned char c,int x0,int y0,int x1,int y1);
 void init_screen(struct BootInfo *);
 void putfont8(struct BootInfo *binfo,char *fontlib,int x,int y,char color,char c);
+void put_block(struct BootInfo *binfo,int pxsize,int pysize,int x0,int y0,char *block);
 void putstr(struct BootInfo *binfo,char *fontlib,int x,int y,char color,char *str);
+void init_mouse_cursor(char *mouse);

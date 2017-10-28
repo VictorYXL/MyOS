@@ -9,11 +9,15 @@ nasm nasmfunc.nsm -f coff -o obj\nasmfunc.obj
 rem nask nasmfunc.nsm obj\nasmfunc.obj obj\nasmfunc.lst
 
 gcc graphic.c -c 
-gcc bootpack.c -c 
+gcc bootpack.c -c
+gcc dsctbl.c -c 
+gcc int.c -c
 move bootpack.o obj\bootpack.obj
 move graphic.o obj\graphic.obj
+move dsctbl.o obj\dsctbl.obj
+move int.o obj\int.obj
 
-obj2bim @source\obj2bim.rul out:obj\bootpack.bim stack:3136k map:obj\bootpack.map obj\bootpack.obj obj\graphic.obj obj\nasmfunc.obj obj\fontlib.obj
+obj2bim @source\obj2bim.rul out:obj\bootpack.bim stack:3136k map:obj\bootpack.map obj\bootpack.obj obj\graphic.obj obj\nasmfunc.obj obj\fontlib.obj obj\dsctbl.obj obj\int.obj
 bim2hrb obj\bootpack.bim obj\bootpack.hrb 0
 copy /B obj\easyOS.bin+obj\bootpack.hrb obj\easyOS.sys
 
@@ -21,3 +25,4 @@ edimg.exe   imgin:source\fdimg0at.tek   wbinimg src:obj\IPL.bin len:512 from:0 t
 copy MyOS.img ..\..\MyOS.img
 
 @pause
+

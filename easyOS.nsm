@@ -1,48 +1,48 @@
 ; haribote-os boot asm
 ; TAB=4
 
-BOTPAK	EQU		0x00280000		; bootpack偺儘乕僪愭
-DSKCAC	EQU		0x00100000		; 僨傿僗僋僉儍僢僔儏偺応強
-DSKCAC0	EQU		0x00008000		; 僨傿僗僋僉儍僢僔儏偺応強乮儕傾儖儌乕僪乯
+BOTPAK	EQU		0x00280000		; bootpackのロード先
+DSKCAC	EQU		0x00100000		; ディスクキャッシュの場所
+DSKCAC0	EQU		0x00008000		; ディスクキャッシュの場所（リアルモード）
 
-;?庢堷?怣懅
+;获取引导信息
 
-;??怣懅揑埵抲 0x0ff0 ~0x0ff8
-	CYLS EQU 0x0ff0				;?掕??嬫(嵼IPL.nsm拞彨憰嵼嬫堟揑?懇埵抲幨擖椆0x0ff8拞)
-	LEDS EQU 0x0ff1				;LED摂
-	VMODE EQU 0x0ff2			;?怓埵悢
-	SCRNX EQU 0x0ff4			;暘櫈棪(x,y)
+;图像信息的位置 0x0ff0 ~0x0ff8
+	CYLS EQU 0x0ff0				;定位区(在IPL.nsm中将装在区域的结束位置写入了0x0ff8中)
+	LEDS EQU 0x0ff1				;LED灯
+	VMODE EQU 0x0ff2			;色位数
+	SCRNX EQU 0x0ff4			;分辨率(x,y)
 	SCRNY EQU 0x0ff6	
-	VRAM EQU 0x0ff8				;?憸?檛嬫(曐懚??撪梕揑抧曽)?巒揑埵抲
+	VRAM EQU 0x0ff8				;图像缓冲区(保存屏幕内容的地方起始始的位置
 	
 	ORG 0xc200			
 	MOV AL,0x13
 	MOV AH,0x00
 	INT 0x10
 	
-	MOV BYTE [VMODE],8			;8埵?怓
-	MOV WORD [SCRNX],320		;暘櫈棪320*200
+	MOV BYTE [VMODE],8			;8位?色
+	MOV WORD [SCRNX],320		;分辨率320*200
 	MOV WORD [SCRNY],200
-	MOV DWORD [VRAM],0x000a0000	;?檛嬫?巒槹?埵抲
-;?庢LED摂揑怣懅
+	MOV DWORD [VRAM],0x000a0000	;图像缓冲区开始位置
+;获取LED灯的信息
 	MOV AH,0x02
 	INT 0x16
 	MOV [LEDS],AL
 fin:
 
-; PIC偑堦愗偺妱傝崬傒傪庴偗晅偗側偄傛偆偵偡傞
-;	AT屳姺婡偺巇條偱偼丄PIC偺弶婜壔傪偡傞側傜丄
-;	偙偄偮傪CLI慜偵傗偭偰偍偐側偄偲丄偨傑偵僴儞僌傾僢僾偡傞
-;	PIC偺弶婜壔偼偁偲偱傗傞
+; PICが一切の割り込みを受け付けないようにする
+;	AT互換機の仕様では、PICの初期化をするなら、
+;	こいつをCLI前にやっておかないと、たまにハングアップする
+;	PICの初期化はあとでやる
 
 		MOV		AL,0xff
 		OUT		0x21,AL
-		NOP						; OUT柦椷傪楢懕偝偣傞偲偆傑偔偄偐側偄婡庬偑偁傞傜偟偄偺偱
+		NOP						; OUT命令を連続させるとうまくいかない機種があるらしいので
 		OUT		0xa1,AL
 
-		CLI						; 偝傜偵CPU儗儀儖偱傕妱傝崬傒嬛巭
+		CLI						; さらにCPUレベルでも割り込み禁止
 
-; CPU偐傜1MB埲忋偺儊儌儕偵傾僋僙僗偱偒傞傛偆偵丄A20GATE傪愝掕
+; CPUから1MB以上のメモリにアクセスできるように、A20GATEを設定
 
 		CALL	waitkbdout
 		MOV		AL,0xd1
@@ -52,72 +52,72 @@ fin:
 		OUT		0x60,AL
 		CALL	waitkbdout
 
-; 僾儘僥僋僩儌乕僪堏峴
+; プロテクトモード移行
 
-;[INSTRSET "i486p"]				; 486偺柦椷傑偱巊偄偨偄偲偄偆婰弎
+;[INSTRSET "i486p"]				; 486の命令まで使いたいという記述
 
-		LGDT	[GDTR0]			; 巄掕GDT傪愝掕
+		LGDT	[GDTR0]			; 暫定GDTを設定
 		MOV		EAX,CR0
-		AND		EAX,0x7fffffff	; bit31傪0偵偡傞乮儁乕僕儞僌嬛巭偺偨傔乯
-		OR		EAX,0x00000001	; bit0傪1偵偡傞乮僾儘僥僋僩儌乕僪堏峴偺偨傔乯
+		AND		EAX,0x7fffffff	; bit31を0にする（ページング禁止のため）
+		OR		EAX,0x00000001	; bit0を1にする（プロテクトモード移行のため）
 		MOV		CR0,EAX
 		JMP		pipelineflush
 pipelineflush:
-		MOV		AX,1*8			;  撉傒彂偒壜擻僙僌儊儞僩32bit
+		MOV		AX,1*8			;  読み書き可能セグメント32bit
 		MOV		DS,AX
 		MOV		ES,AX
 		MOV		FS,AX
 		MOV		GS,AX
 		MOV		SS,AX
 
-; bootpack偺揮憲
+; bootpackの転送
 
-		MOV		ESI,bootpack	; 揮憲尦
-		MOV		EDI,BOTPAK		; 揮憲愭
+		MOV		ESI,bootpack	; 転送元
+		MOV		EDI,BOTPAK		; 転送先
 		MOV		ECX,512*1024/4
 		CALL	memcpy
 
-; 偮偄偱偵僨傿僗僋僨乕僞傕杮棃偺埵抲傊揮憲
+; ついでにディスクデータも本来の位置へ転送
 
-; 傑偢偼僽乕僩僙僋僞偐傜
+; まずはブートセクタから
 
-		MOV		ESI,0x7c00		; 揮憲尦
-		MOV		EDI,DSKCAC		; 揮憲愭
+		MOV		ESI,0x7c00		; 転送元
+		MOV		EDI,DSKCAC		; 転送先
 		MOV		ECX,512/4
 		CALL	memcpy
 
-; 巆傝慡晹
+; 残り全部
 
-		MOV		ESI,DSKCAC0+512	; 揮憲尦
-		MOV		EDI,DSKCAC+512	; 揮憲愭
+		MOV		ESI,DSKCAC0+512	; 転送元
+		MOV		EDI,DSKCAC+512	; 転送先
 		MOV		ECX,0
 		MOV		CL,BYTE [CYLS]
-		IMUL	ECX,512*18*2/4	; 僔儕儞僟悢偐傜僶僀僩悢/4偵曄姺
-		SUB		ECX,512/4		; IPL偺暘偩偗嵎偟堷偔
+		IMUL	ECX,512*18*2/4	; シリンダ数からバイト数/4に変換
+		SUB		ECX,512/4		; IPLの分だけ差し引く
 		CALL	memcpy
 
-; asmhead偱偟側偗傟偽偄偗側偄偙偲偼慡晹偟廔傢偭偨偺偱丄
-;	偁偲偼bootpack偵擟偣傞
+; asmheadでしなければいけないことは全部し終わったので、
+;	あとはbootpackに任せる
 
-; bootpack偺婲摦
+; bootpackの起動
 
 		MOV		EBX,BOTPAK
 		MOV		ECX,[EBX+16]
 		ADD		ECX,3			; ECX += 3;
 		SHR		ECX,2			; ECX /= 4;
-		JZ		skip			; 揮憲偡傞傋偒傕偺偑側偄
-		MOV		ESI,[EBX+20]	; 揮憲尦
+		JZ		skip			; 転送するべきものがない
+		MOV		ESI,[EBX+20]	; 転送元
 		ADD		ESI,EBX
-		MOV		EDI,[EBX+12]	; 揮憲愭
+		MOV		EDI,[EBX+12]	; 転送先
 		CALL	memcpy
 skip:
-		MOV		ESP,[EBX+12]	; 僗僞僢僋弶婜抣
+		MOV		ESP,[EBX+12]	; スタック初期値
 		JMP		DWORD 2*8:0x0000001b
 
 waitkbdout:
 		IN		 AL,0x64
 		AND		 AL,0x02
-		JNZ		waitkbdout		; AND偺寢壥偑0偱側偗傟偽waitkbdout傊
+		JNZ		waitkbdout		; ANDの結果が0でなければwaitkbdoutへ
 		RET
 
 memcpy:
@@ -126,15 +126,15 @@ memcpy:
 		MOV		[EDI],EAX
 		ADD		EDI,4
 		SUB		ECX,1
-		JNZ		memcpy			; 堷偒嶼偟偨寢壥偑0偱側偗傟偽memcpy傊
+		JNZ		memcpy			; 引き算した結果が0でなければmemcpyへ
 		RET
-; memcpy偼傾僪儗僗僒僀僘僾儕僼傿僋僗傪擖傟朰傟側偗傟偽丄僗僩儕儞僌柦椷偱傕彂偗傞
+; memcpyはアドレスサイズプリフィクスを入れ忘れなければ、ストリング命令でも書ける
 
 		ALIGNB	16
 GDT0:
-		RESB	8				; 僰儖僙儗僋僞
-		DW		0xffff,0x0000,0x9200,0x00cf	; 撉傒彂偒壜擻僙僌儊儞僩32bit
-		DW		0xffff,0x0000,0x9a28,0x0047	; 幚峴壜擻僙僌儊儞僩32bit乮bootpack梡乯
+		RESB	8				; ヌルセレクタ
+		DW		0xffff,0x0000,0x9200,0x00cf	; 読み書き可能セグメント32bit
+		DW		0xffff,0x0000,0x9a28,0x0047	; 実行可能セグメント32bit（bootpack用）
 
 		DW		0
 GDTR0:
@@ -143,3 +143,4 @@ GDTR0:
 
 		ALIGNB	16
 bootpack:
+

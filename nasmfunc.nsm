@@ -10,14 +10,15 @@
 	GLOBAL	_io_hlt,_write_mem8,_io_cli,_io_sti,_io_stihlt
 	GLOBAL	_io_in8,_io_in16,_io_in32,_io_out8,_io_out16,_io_out32
 	GLOBAL  _io_load_eflags,_io_store_eflags
+	GLOBAL 	_load_gdtr,_load_idtr
 [SECTION .text]					;
 
 _io_hlt:						;void io_hlt(void)		
-	HLT							;ä½¿æ“ä½œç³»ç»Ÿäº¤å‡ºCPUæ§åˆ¶æƒ
+	HLT							;Ê¹²Ù×÷ÏµÍ³½»³öCPU¿ØÖÆÈ¨
 	RET			
 	
-_write_mem8:					;void write_mem8(int addr,int data) å‘æŒ‡å®šåœ°å€å†™å…¥intï¼Œå‚æ•°ä¼ é€’ä½¿ç”¨æ ˆçš„æ–¹å¼ï¼ŒESPä¸ºæ ˆé¡¶æŒ‡é’ˆ
-	MOV	ECX,[ESP+4]				;ç¬¬nä¸ªå‚æ•°çš„åœ°å€ä¸ºESP+n*4(4æ˜¯ç”±äºæˆ‘ä»¬é‡‡ç”¨32ä½æ¨¡å¼ï¼Œä¸€æ¬¡è¾“å…¥4å­—èŠ‚)
+_write_mem8:					;void write_mem8(int addr,int data) ÏòÖ¸¶¨µØÖ·Ğ´Èëint£¬²ÎÊı´«µİÊ¹ÓÃÕ»µÄ·½Ê½£¬ESPÎªÕ»¶¥Ö¸Õë
+	MOV	ECX,[ESP+4]				;µÚn¸ö²ÎÊıµÄµØÖ·ÎªESP+n*4(4ÊÇÓÉÓÚÎÒÃÇ²ÉÓÃ32Î»Ä£Ê½£¬Ò»´ÎÊäÈë4×Ö½Ú)
 	MOV AL,[ESP+8]
 	MOV	[ECX],AL
 	RET
@@ -38,7 +39,7 @@ _io_stihlt:						;void io_cli(void)
 _io_in8:						;int io_in8(int port)
 	MOV EDX,[ESP+4]
 	MOV EAX,0
-	IN AL,DX					;IN è¯»å–è®¾å¤‡å¯¹åº”ç«¯å£çš„ç”µæ°”ä¿¡æ¯ IN AL/AX/EAX port
+	IN AL,DX					;IN ¶ÁÈ¡Éè±¸¶ÔÓ¦¶Ë¿ÚµÄµçÆøĞÅÏ¢ IN AL/AX/EAX port
 	RET
 
 _io_in16:						;int io_in16(int port)
@@ -56,7 +57,7 @@ _io_in32:						;int io_in32(int port)
 _io_out8:						;int io_out8(int port,int data)
 	MOV EDX,[ESP+4]				
 	MOV EAX,[ESP+8]
-	OUT DX,AL					;OUT å‘è®¾å¤‡å¯¹åº”ç«¯å£å†™å…¥ç”µæ°”ä¿¡æ¯ OUT port AL/AX/EAX
+	OUT DX,AL					;OUT ÏòÉè±¸¶ÔÓ¦¶Ë¿ÚĞ´ÈëµçÆøĞÅÏ¢ OUT port AL/AX/EAX
 	RET
 	
 _io_out16:						;int io_out8(int port,int data)
@@ -72,12 +73,25 @@ _io_out32:						;int io_out8(int port,int data)
 	RET
 	
 _io_load_eflags:				;int io_load_eflags(void)
-	PUSHFD						;æŒ‰dwordæ ¼å¼push  eflags
+	PUSHFD						;°´dword¸ñÊ½push  eflags
 	POP EAX
 	RET
 
 _io_store_eflags:				;int io_store_eflags(int eflags)
 	MOV EAX,[ESP+4]
 	PUSH EAX					
-	POPFD 						;æŒ‰dwordæ ¼å¼pop  eflags
+	POPFD 						;°´dword¸ñÊ½pop  eflags
+	RET
+	
+;GDTRÓĞ6¸ö×Ö½Ú£¬Ç°Á½¸ö×Ö½Ú±íÊ¾¶ÎÉÏÏŞ£¬ºóËÄ¸ö×Ö½ÚÎª¶Ì¿ªÊ¼µØÖ·
+_load_gdtr:					;void load_gdtr(int limit,int addr)
+	MOV AX,[ESP+4]
+	MOV [ESP+6],AX
+	LGDT [ESP+6]
+	RET
+
+_load_idtr:					;void load_idtr(int limit,int addr)
+	MOV AX,[ESP+4]
+	MOV [ESP+6],AX
+	LIDT [ESP+6]
 	RET

@@ -1,19 +1,30 @@
 #include"nasmfunc.h"
 #include"graphic.h"
+#include"dsctbl.h" 
+#include"int.h"
+#include<stdio.h>
 void HariMain()
+
 {
-	//å±å¹•é•¿å®½ï¼Œå›¾åƒç¼“å†²åŒºèµ·å§‹ä½ç½®
+	//ÆÁÄ»³¤¿í£¬Í¼Ïñ»º³åÇøÆðÊ¼Î»ÖÃ
 	struct BootInfo *binfo;
 	extern char fontlib[4096]; 
 	
-	//è®¾å®šè°ƒè‰²æ¿
+	//Éè¶¨µ÷É«°å
 	init_palette();
+	init_pic();
 	
-	//åœ¨easyOS.nsmä¸­å®šä¹‰
-	binfo=(struct BootInfo *) 0x0ff0;
+	//ÔÚeasyOS.nsmÖÐ¶¨Òå
+	binfo=(struct BootInfo *) 0x0ff0; 
 	init_screen(binfo);
 	
-	putstr(binfo,fontlib,8,8,WHITE,"You are my friend");
+	char s[120],mcursor[256];
+	sprintf (s,"scrnx=%d",binfo->scrnx);
+	putstr(binfo,fontlib,8,8,WHITE,s); 
+	
+	init_mouse_cursor(mcursor);
+	put_block(binfo,16,16,200,100,mcursor);
+	
 	while(1)
 		io_hlt();
 
