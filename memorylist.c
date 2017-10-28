@@ -24,7 +24,6 @@ void showMemory(struct Sheet *memoryListSheet)
 			curPosY++;
 		}
 	}
-	
 }
 
 void memoryListTask_Main(struct Task *task)

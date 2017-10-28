@@ -13,7 +13,7 @@ struct UsedInfo
 };
 struct MemoryList
 {
-	int maxsize;
+	unsigned int maxsize;
 	int freesize,maxfreesize;
 	struct FreeInfo free[MEMORYLISTFREES];
 	struct UsedInfo used[MEMORYLISTFREES];

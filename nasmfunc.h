@@ -27,3 +27,4 @@ void load_tr(int);
 int load_cr0(void);
 void store_cr0(int cr0);
 void farjmp(int eip,int cs);
+void shutdown();

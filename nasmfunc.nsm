@@ -10,7 +10,7 @@ GLOBAL  _io_load_eflags,_io_store_eflags
 GLOBAL 	_load_gdtr,_load_idtr,_load_tr
 GLOBAL	_nsm_inthandler20,_nsm_inthandler21,_nsm_inthandler27,_nsm_inthandler2c
 GLOBAL	_load_cr0,_store_cr0
-GLOBAL	_farjmp 
+GLOBAL	_farjmp,_shutdown 
 	
 EXTERN	_inthandler20,_inthandler21,_inthandler27,_inthandler2c
 
@@ -205,3 +205,7 @@ _farjmp:						 ;连续读取6个字节前4个写入EIP寄存器，后两个写入CS寄存器
 	JMP	FAR[ESP+4] 
 	RET
 
+_shutdown:
+MOV AX,5301H
+XOR BX,BX
+INT 15H 

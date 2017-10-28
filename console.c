@@ -15,7 +15,7 @@
 #include"player.h"
 #include<stdio.h>
 #include<string.h>
-//½«×Ö·û´®½âÎö³ÉÃüÁî 
+//å°†å­—ç¬¦ä¸²è§£æžæˆå‘½ä»¤ 
 void analyseCommand(char *commandString,struct Command *command)
 {
 	command->commandType=-1;
@@ -31,7 +31,7 @@ void analyseCommand(char *commandString,struct Command *command)
 	};
 	char coms[MAXCOMMANDLENGTH];
 	int i=0,j=0;
-	//½âÎöÃüÁî 
+	//è§£æžå‘½ä»¤ 
 	while (commandString[i]!='\0' && commandString[i]!=' ')
 	{
 		coms[i]=commandString[i];
@@ -44,7 +44,7 @@ void analyseCommand(char *commandString,struct Command *command)
 		if (strcmp(coms,com[i])==0)
 			command->commandType=i;
 	
-	//½âÎö²ÎÊý 
+	//è§£æžå‚æ•° 
 	while (commandString[i]!='\0')
 		if (commandString[i]!=' ') 
 			command->par[command->parCount][j++]=commandString[i++];
@@ -57,43 +57,43 @@ void analyseCommand(char *commandString,struct Command *command)
 	command->par[command->parCount++][j]='\0';
 }
 
-//consoleÈÎÎñ 
+//consoleä»»åŠ¡ 
 void consoleTask_Main(struct Task *task)
 {
-	//³õÊ¼»¯»º³åÇø 
+	//åˆå§‹åŒ–ç¼“å†²åŒº 
 	char bufferArray[128];
 	struct Buffer bufferTime;
 	initBuffer(&bufferTime,128,bufferArray);
 
-	//³õÊ¼»¯¶¨Ê±Æ÷ 
+	//åˆå§‹åŒ–å®šæ—¶å™¨ 
 	struct Timer *timerCur;
 	timerCur=allocTimer();
 	initTimer(timerCur,&bufferTime,1);
 	setTimer(timerCur,50);
 
-	//ÏÔÊ¾´°¿Ú
+	//æ˜¾ç¤ºçª—å£
 	struct Sheet *consoleSheet;
 	unsigned char *consoleBuffer;
 	consoleSheet=allocSheet();
-	consoleBuffer=(unsigned char *)allocMem_4k(200*68,"Console UI");//ÉêÇëÄÚ´æ¿Õ¼ä 
+	consoleBuffer=(unsigned char *)allocMem_4k(200*68,"Console UI");//ç”³è¯·å†…å­˜ç©ºé—´ 
 	setBufInSheet(consoleSheet,consoleBuffer,200,68,-1);
 	makeWindow(consoleSheet,200,68,"Console");
 	putStrOnSht(consoleSheet,16+0*8,28+0*16,BLACK,"Welcome to YangXL OS!");
 	slideSheet(consoleSheet,180,72);
 	updownSheet(consoleSheet,task->winID+1);
 	
-	//ÊäÈëµÄÐÅÏ¢ 
+	//è¾“å…¥çš„ä¿¡æ¯ 
 	char curInput[128];
-	int curPosX=0,length=0;//¹â±ê 
+	int curPosX=0,length=0;//å…‰æ ‡ 
 	unsigned char data;
-	struct Command command;//ÃüÁî 
+	struct Command command;//å‘½ä»¤ 
 	char str[128];
 	int flag=0,f1=0;
 	int t=0;
 	while (1)
 	{
 		flag=0; 
-		if (window.focus!=task->winID)//½¹µã²»ÔÚ£¬È¡Ïû¹â±ê 
+		if (window.focus!=task->winID)//ç„¦ç‚¹ä¸åœ¨ï¼Œå–æ¶ˆå…‰æ ‡ 
 		{
 			if (f1==0)
 			{
@@ -102,22 +102,22 @@ void consoleTask_Main(struct Task *task)
 				f1=1;
 			}
 			continue;
-		}else if (timerCur->flag==TIMER_ALLOCED)//ÖØÐÂ»ñµÃ½¹µã£¬ÖØÆô¹â±ê 
+		}else if (timerCur->flag==TIMER_ALLOCED)//é‡æ–°èŽ·å¾—ç„¦ç‚¹ï¼Œé‡å¯å…‰æ ‡ 
 		{
 			initTimer(timerCur,&bufferTime,1);
 			setTimer(timerCur,50);
 		}
 		f1=0;
 		io_cli();
-		//¼ì²éÊó±ê¼üÅÌÊÂ¼þ 
+		//æ£€æŸ¥é¼ æ ‡é”®ç›˜äº‹ä»¶ 
 		if (getBuffer(&task->bufAll.key,&data))
 		{
-			//¼üÅÌ 
+			//é”®ç›˜ 
 			io_sti();
 			flag=1;
 			switch (data)
 			{
-				case 0x0e://ÍË¸ñ¼ü 
+				case 0x0e://é€€æ ¼é”® 
 					if (curPosX>0)
 					{
 						curPosX--;
@@ -135,7 +135,7 @@ void consoleTask_Main(struct Task *task)
 					if (curPosX<length)
 						curPosX++;
 					break;
-				case 0x1c://»Ø³µ¼ü 
+				case 0x1c://å›žè½¦é”® 
 					analyseCommand(curInput,&command);
 					curInput[0]='\0';
 					curPosX=0;
@@ -144,7 +144,7 @@ void consoleTask_Main(struct Task *task)
 					{
 						case Calculator:
 						{
-							//ÔËÐÐcalculatorÈÎÎñ
+							//è¿è¡Œcalculatorä»»åŠ¡
 							struct Task *calculatorTask; 
 							calculatorTask=allocTask();		
 							initTask(calculatorTask,(int)&calculatorTask_Main,"Calculator",11);
@@ -188,10 +188,14 @@ void consoleTask_Main(struct Task *task)
 							runTask(playTask);
 							break;
 						}
+						case Shutdown:
+						{
+							shutdown();
+						}
 					}
 					break;
 				default:
-					if (data<0x80 && keyboard.keyTable[data]>0 && curPosX<=20)//×ÖÄ¸£¬Êý×Ö 
+					if (data<0x80 && keyboard.keyTable[data]>0 && curPosX<=20)//å­—æ¯ï¼Œæ•°å­— 
 					{
 						curInput[curPosX++] = keyboard.keyTable[data+keyboard.isShift*0x80];
 						if (curPosX>length)

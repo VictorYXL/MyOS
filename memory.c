@@ -46,7 +46,7 @@ unsigned int memtest(unsigned int start,unsigned int end)
 unsigned int memtestSub(unsigned int start,unsigned int end)
 {
 	unsigned int i,*p,old,pat0=0xaa55aa55,pat1=0x55aa55aa;
-	for (i=start;i<=end;i+=0x1000)
+	for (i=start;i<=end;i+=0x2000)
 	{
 		p=(unsigned int *)i+0xffc;//只用检查最后的4个字节即可
 		//对每个单元格的测试方法：写入->反转->判断->再反转->判断->恢复

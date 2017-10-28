@@ -61,7 +61,7 @@ void HariMain()
 	int size;
 	initMem();
 	meml->maxsize=0x7fffffff; 
-	//size=memtest(0x00400000,0xbfffffff);//内存测试 
+	size=memtest(0x00400000,0xbfffffff);//内存测试 
 	freeMem(0x00001000,0x0009e000);
 	freeMem(0x00400000,size-0x00400000);
 	meml->used[0].addr=0x9e000;
@@ -120,7 +120,8 @@ void HariMain()
 	//显示基本信息 
 	char str[128]; 
 	//显示内存大小
-	sprintf (str,"Memory: %dM",meml->maxsize/1024/1024);
+	unsigned int u=meml->maxsize/1024/1024;
+	sprintf (str,"Memory: %dM",u);
 	putStrAndBackOnSht(sht_back,0,0,LIGHTRED,LIGHTGRAY,str,-1);
 	//显示Focus窗口
 	sprintf (str,"Fouse: Console");

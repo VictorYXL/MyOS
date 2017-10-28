@@ -25,14 +25,14 @@ void openFile(char *fileName)
 		textViewerTask->parCount++;
 		createWindow(textViewerTask,"TextViewer");
 		runTask(textViewerTask);
-	}else if (strcmp(fileName,"\\Source\\Player.c")==0)
+	}else if (strcmp(fileName,"\\Source\\Play.c")==0)
 	{
 		struct Task *textViewerTask; 
 		textViewerTask=allocTask();		
 		initTask(textViewerTask,(int)&textViewerTask_Main,"TextViewer",11);
-		sprintf(textViewerTask->par[0],"\\Source\\Player.c");
+		sprintf(textViewerTask->par[0],"\\Source\\Play.c");
 		textViewerTask->parCount++;
-		createWindow(textViewerTask,"Player.c");
+		createWindow(textViewerTask,"Play.c");
 		runTask(textViewerTask);
 	}else if (strcmp(fileName,"\\Image\\Pic1")==0)
 	{
@@ -43,7 +43,7 @@ void openFile(char *fileName)
 		imageViewerTask->parCount++;
 		createWindow(imageViewerTask,"ImageViewer");
 		runTask(imageViewerTask);
-	}else if (fileName=="\\Music\\Mus1")
+	}else if (strcmp(fileName,"\\Music\\Mus1")==0)
 	{
 		struct Task *textViewerTask; 
 		textViewerTask=allocTask();		
