@@ -26,7 +26,7 @@ void sheet_setbuf(struct Sheet *sht,unsigned char *buf,int xsize,int ysize,int c
 void sheet_updown(struct SheetControl *scl,struct Sheet *sht,int height);
 void sheet_slide(struct SheetControl *scl,struct Sheet* sht,int vx0,int vy0);
 void sheet_free(struct SheetControl *scl,struct Sheet* sht);
-void sheet_refreshSub(struct SheetControl *scl,int x0,int y0,int pxsize,int pysize);
+void sheet_refreshSub(struct SheetControl *scl,int x0,int y0,int pxsize,int pysize,int h0);
 void sheet_refreshAll(struct SheetControl *scl);
 void sheet_refreshSheet(struct SheetControl *scl,struct Sheet *sht);
 void sheet_refreshSheetSub(struct SheetControl *scl,struct Sheet *sht,int x0,int y0,int xsize,int ysize);

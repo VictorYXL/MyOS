@@ -19,7 +19,6 @@ void putfont8_sht(struct Sheet *sht,int x,int y,char color,char c)
 		for (j=0;j<8;j++)
 			if ((font[i]&tmp[j])!=0)
 				sht->buffer[(y+i)*sht->xsize+x+j]=color;
-				
 }
 void putstr_sht(struct Sheet *sht,int x,int y,char color,char *str)
 {
@@ -31,7 +30,12 @@ void putstr_sht(struct Sheet *sht,int x,int y,char color,char *str)
 		t++;
 	}
 }
-
+void putstr_back_sht(struct SheetControl *scl,struct Sheet *sht,int x,int y,int color,int backcolor,char *str,int length)
+{
+	boxfill_sht(sht,x,y,length*8,16,backcolor);
+	putstr_sht(sht,x,y,color,str);
+	sheet_refreshSheetSub(scl,sht,x,y,length*8,16);
+}
 void init_mouse_cursor(struct Sheet *sht)
 {
 	//ЪѓБъзјБъЭМ
@@ -139,7 +143,7 @@ void init_screen_sht(struct Sheet *sht)
 	boxfill_sht(sht,2,y-24,1,21,WHITE);
 	boxfill_sht(sht,3,y-4,57,1,DULLGRAY);
 	boxfill_sht(sht,59,y-23,1,19,DULLGRAY);
-	boxfill_sht(sht,2,y-3,57,1,BLACK);
+	boxfill_sht(sht,2,y-3,58,1,BLACK);
 	boxfill_sht(sht,60,y-24,1,22,BLACK);
 
 	boxfill_sht(sht,x-47,y-24,44,1,DULLGRAY);
@@ -170,4 +174,59 @@ void putstr_srn(struct BootInfo *binfo,int x,int y,char color,char *str)
 		t++;
 	}
 }
-
+void make_window(struct Sheet *sht,int xsize,int ysize,char *title)
+{
+	//boxfill_sht(sht,0,0,xsize,ysize,LIGHTRED);
+	static char closebtn[14][16] = 
+		{
+		"OOOOOOOOOOOOOOO@",
+		"OQQQQQQQQQQQQQ$@",
+		"OQQQQQQQQQQQQQ$@",
+		"OQQQ@@QQQQ@@QQ$@",
+		"OQQQQ@@QQ@@QQQ$@",
+		"OQQQQQ@@@@QQQQ$@",
+		"OQQQQQQ@@QQQQQ$@",
+		"OQQQQQ@@@@QQQQ$@",
+		"OQQQQ@@QQ@@QQQ$@",
+		"OQQQ@@QQQQ@@QQ$@",
+		"OQQQQQQQQQQQQQ$@",
+		"OQQQQQQQQQQQQQ$@",
+		"O$$$$$$$$$$$$$$@",
+		"@@@@@@@@@@@@@@@@"
+		};
+	int x, y;
+	char c;
+	boxfill_sht(sht, 0,         0,         xsize ,1        , LIGHTGRAY);
+	boxfill_sht(sht, 1,         1,         xsize - 2, 1        , WHITE);
+	boxfill_sht(sht, 0,         0,         1,         ysize , LIGHTGRAY);
+	boxfill_sht(sht, 1,         1,         1,         ysize - 2, WHITE);
+	boxfill_sht(sht, xsize - 2, 1,         1,		 ysize - 2, DULLGRAY);
+	boxfill_sht(sht, xsize - 1, 0,         1, ysize, BLACK);
+	boxfill_sht(sht, 2,         2,         xsize - 4, ysize - 4, LIGHTGRAY);
+	boxfill_sht(sht, 3,         3,         xsize - 6, 18       , DULLINDIGO);
+	boxfill_sht(sht, 1,         ysize - 2, xsize - 2, 1, DULLGRAY);
+	boxfill_sht(sht, 0,         ysize - 1, xsize, 1, BLACK);
+	putstr_sht(sht,16, 4, WHITE, title);
+	for (y = 0; y < 14; y++) 
+	{
+		for (x = 0; x < 16; x++) 
+		{
+			c = closebtn[y][x];
+			if (c == '@') 
+			{
+				c = BLACK;
+			} else if (c == '$') 
+			{
+				c = DULLGRAY;
+			} else if (c == 'Q') 
+			{
+				c = LIGHTGRAY;
+			} else 
+			{
+				c = WHITE;
+			}
+			sht->buffer[(5 + y) * xsize + (xsize - 21 + x)] = c;
+		}
+	}
+	return;
+}

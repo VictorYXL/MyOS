@@ -28,3 +28,5 @@ void putstr_sht(struct Sheet *sht,int x,int y,char color,char *str);
 void init_mouse_cursor(struct Sheet *sht);
 void putfont8_srn(struct BootInfo *binfo,int x,int y,char color,char c);
 void putstr_srn(struct BootInfo *binof,int x,int y,char color,char *str);
+void putstr_back_sht(struct SheetControl *scl,struct Sheet *sht,int x,int y,int color,int backcolor,char *str,int length);
+void make_window(struct Sheet *sht,int xsize,int ysize,char *title);

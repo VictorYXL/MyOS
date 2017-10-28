@@ -8,10 +8,10 @@
 	GLOBAL	_io_in8,_io_in16,_io_in32,_io_out8,_io_out16,_io_out32
 	GLOBAL  _io_load_eflags,_io_store_eflags
 	GLOBAL 	_load_gdtr,_load_idtr
-	GLOBAL	_nsm_inthandler21,_nsm_inthandler27,_nsm_inthandler2c
+	GLOBAL	_nsm_inthandler20,_nsm_inthandler21,_nsm_inthandler27,_nsm_inthandler2c
 	GLOBAL	_load_cr0,_store_cr0
 	
-	EXTERN	_inthandler21,_inthandler27,_inthandler2c
+	EXTERN	_inthandler20,_inthandler21,_inthandler27,_inthandler2c
 [SECTION .text]					;
 
 _io_hlt:						;void io_hlt(void)		
@@ -57,17 +57,17 @@ _io_in32:						;int io_in32(int port)
 
 _io_out8:						;int io_out8(int port,int data)
 	MOV EDX,[ESP+4]				
-	MOV EAX,[ESP+8]
+	MOV AL,[ESP+8]
 	OUT DX,AL					;OUT 向设备对应端口写入电气信息 OUT port AL/AX/EAX
 	RET
 	
-_io_out16:						;int io_out8(int port,int data)
+_io_out16:						;int io_out16(int port,int data)
 	MOV EDX,[ESP+4]				
-	MOV EAX,[ESP+8]
+	MOV AX,[ESP+8]
 	OUT DX,AX	
 	RET
 	
-_io_out32:						;int io_out8(int port,int data)
+_io_out32:						;int io_out32(int port,int data)
 	MOV EDX,[ESP+4]				
 	MOV EAX,[ESP+8]
 	OUT DX,EAX	
@@ -96,6 +96,28 @@ _load_idtr:					;void load_idtr(int limit,int addr)
 	MOV [ESP+6],AX
 	LIDT [ESP+6]
 	RET
+
+_nsm_inthandler20:
+	;保护现场 
+	PUSH ES
+	PUSH DS
+	PUSHAD					;PUSH EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI
+	
+	;中断处理 
+	MOV EAX,ESP				;汇编中调用C程序，将参数依次压入栈中（左边的在栈底） 
+	PUSH EAX
+	MOV AX,SS
+	MOV DS,AX
+	MOV ES,AX
+	CALL _inthandler20
+	POP EAX
+	
+	;恢复现场
+	POPAD
+	POP DS
+	POP ES
+	
+	IRETD
 	
 _nsm_inthandler21:
 	;保护现场 

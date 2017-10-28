@@ -1,6 +1,7 @@
 #include"nasmfunc.h"
 #include"buffer.h"
 #include"int.h"
+#include"timer.h" 
 #include<stdio.h>
 /*
 PIC是可编程中断控制器 有两个PIC（主，从）每个PIC有8路IRQ（中断请求） 
@@ -31,9 +32,36 @@ void init_pic(void)
 	io_out8(PIC0_IMR,0xfb);	//11111011 PIC1以外 全部禁止 
 	io_out8(PIC1_IMR,0xff);	//11111111 禁止所有中断
 
-	return; 
-	 
+	return; 	 
 }
+//定时器中断处理程序 
+void inthandler20(int *esp)
+{
+	int i;
+	
+	//通知PIC中断已经接受 
+	//定时器中断是IRQ0
+	io_out8(PIC0_OCW2,0x60);
+	timerctl.count++;
+	//未到下一次超时的时间 
+	if (timerctl.next>timerctl.count)
+		return;
+	timerctl.next=TIME_MAX;
+	//到了超时时间，所有超时计时器写缓存，未超时中剩余时间最短的为下一次超时时间 
+	for (i=0;i<TIMER_MAX;i++) 
+	{
+		if (timerctl.timer[i].flag==TIMER_USING)
+		{
+			if (timerctl.count>=timerctl.timer[i].timeout) 
+			{
+				timerctl.timer[i].flag=TIMER_ALLOCED;
+				buffer_put(timerctl.timer[i].timeoutBuffer,timerctl.timer[i].timeoutData);
+			}else if (timerctl.timer[i].timeout<timerctl.next)
+					timerctl.next=timerctl.timer[i].timeout;
+		}
+	}
+	return;
+} 
 //键盘中断处理程序 
 void inthandler21(int *esp)
 {
