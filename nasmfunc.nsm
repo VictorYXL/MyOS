@@ -1,0 +1,83 @@
+; naskfunc
+; TAB=4
+
+;[FORMAT "WCOFF"]				; nasm -f coff
+[BITS 32]						;
+;[CPU 486]
+;[INSTRSET "i486p"]
+;[FILE "nasmfunc.nsm"]			
+
+	GLOBAL	_io_hlt,_write_mem8,_io_cli,_io_sti,_io_stihlt
+	GLOBAL	_io_in8,_io_in16,_io_in32,_io_out8,_io_out16,_io_out32
+	GLOBAL  _io_load_eflags,_io_store_eflags
+[SECTION .text]					;
+
+_io_hlt:						;void io_hlt(void)		
+	HLT							;使操作系统交出CPU控制权
+	RET			
+	
+_write_mem8:					;void write_mem8(int addr,int data) 向指定地址写入int，参数传递使用栈的方式，ESP为栈顶指针
+	MOV	ECX,[ESP+4]				;第n个参数的地址为ESP+n*4(4是由于我们采用32位模式，一次输入4字节)
+	MOV AL,[ESP+8]
+	MOV	[ECX],AL
+	RET
+	
+_io_cli:						;void io_cli(void)
+	CLI
+	RET
+	
+_io_sti:						;void io_cli(void)
+	STI
+	RET
+	
+_io_stihlt:						;void io_cli(void)
+	STI
+	HLT
+	RET
+	
+_io_in8:						;int io_in8(int port)
+	MOV EDX,[ESP+4]
+	MOV EAX,0
+	IN AL,DX					;IN 读取设备对应端口的电气信息 IN AL/AX/EAX port
+	RET
+
+_io_in16:						;int io_in16(int port)
+	MOV EDX,[ESP+4]
+	MOV EAX,0
+	IN AX,DX					
+	RET
+
+_io_in32:						;int io_in32(int port)
+	MOV EDX,[ESP+4]
+	MOV EAX,0
+	IN EAX,DX				
+	RET
+
+_io_out8:						;int io_out8(int port,int data)
+	MOV EDX,[ESP+4]				
+	MOV EAX,[ESP+8]
+	OUT DX,AL					;OUT 向设备对应端口写入电气信息 OUT port AL/AX/EAX
+	RET
+	
+_io_out16:						;int io_out8(int port,int data)
+	MOV EDX,[ESP+4]				
+	MOV EAX,[ESP+8]
+	OUT DX,AX	
+	RET
+	
+_io_out32:						;int io_out8(int port,int data)
+	MOV EDX,[ESP+4]				
+	MOV EAX,[ESP+8]
+	OUT DX,EAX	
+	RET
+	
+_io_load_eflags:				;int io_load_eflags(void)
+	PUSHFD						;按dword格式push  eflags
+	POP EAX
+	RET
+
+_io_store_eflags:				;int io_store_eflags(int eflags)
+	MOV EAX,[ESP+4]
+	PUSH EAX					
+	POPFD 						;按dword格式pop  eflags
+	RET
