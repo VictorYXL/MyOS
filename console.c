@@ -12,6 +12,7 @@
 #include"memorylist.h"
 #include"tasklist.h"
 #include"open.h"
+#include"player.h"
 #include<stdio.h>
 #include<string.h>
 //½«×Ö·û´®½âÎö³ÉÃüÁî 
@@ -174,6 +175,15 @@ void consoleTask_Main(struct Task *task)
 						case Open:
 						{
 							openFile (command.par[0]);
+							break;
+						}
+						case Play:
+						{
+							struct Task *playTask; 
+							playTask=allocTask();		
+							initTask(playTask,(int)&playTask_Main,"Task List",1);
+							createWindow(playTask,"Task List");
+							runTask(playTask);
 							break;
 						}
 					}

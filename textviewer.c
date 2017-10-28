@@ -10,7 +10,7 @@
 #include"textviewer.h" 
 #include<stdio.h>
 #include<string.h> 
-void loadFile (char *fileName,struct Sheet *textViewerSheet,int* curPosX,int* curPosY,char curInput[20][75])
+void loadTextFile (char *fileName,struct Sheet *textViewerSheet,int* curPosX,int* curPosY,char curInput[20][75])
 {
 	if (strcmp(fileName,"\\Text\\Welcome")==0)
 	{
@@ -70,7 +70,7 @@ void textViewerTask_Main(struct Task *task)
 	
 	for (int i=0;i<50;i++)
 		curInput[i][0]='\0';
-	loadFile(task->par[0],textViewerSheet,&curPosX,&curPosY,curInput);
+	loadTextFile(task->par[0],textViewerSheet,&curPosX,&curPosY,curInput);
 	
 	while (1)
 	{

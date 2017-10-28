@@ -10,7 +10,7 @@
 #include"console.h"
 #include"textviewer.h"
 #include"imageviewer.h"
-#include"musicplayer.h"
+#include"player.h"
 #include"open.h"
 #include<stdio.h>
 #include<string.h>
@@ -45,13 +45,13 @@ void openFile(char *fileName)
 		runTask(imageViewerTask);
 	}else if (fileName=="\\Music\\Mus1")
 	{
-		struct Task *musicPlayerTask; 
-		musicPlayerTask=allocTask();		
-		initTask(musicPlayerTask,(int)&musicPlayerTask_Main,"Music",1);
-		sprintf(musicPlayerTask->par[0],"\\Music\\BGM");
-		musicPlayerTask->parCount++;
-		createWindow(musicPlayerTask,"ImageViewer");
-		runTask(musicPlayerTask);
+		struct Task *textViewerTask; 
+		textViewerTask=allocTask();		
+		initTask(textViewerTask,(int)&textViewerTask_Main,"TextViewer",11);
+		sprintf(textViewerTask->par[0],"\\Music\\Mus1");
+		textViewerTask->parCount++;
+		createWindow(textViewerTask,"TextViewer");
+		runTask(textViewerTask);
 	}
 
 }

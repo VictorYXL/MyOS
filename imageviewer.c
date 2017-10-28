@@ -8,37 +8,61 @@
 #include"keyboard.h"
 #include"mouse.h"
 #include"imageviewer.h" 
-#include<stdio.h>
-
-void imageViewerTask_Main(struct Task *task)
+#include<stdio.h> 
+void loadImageFile (char *fileName,struct Sheet *imageViewerSheet)
 {
+	for (int i=1;i<7;i++)
+		for (int j=i*30;j<i*30+30;j++)
+			for (int k=5;k<295;k++)
+				imageViewerSheet->buffer[j*300+k]=i;
+	refreshSheet(imageViewerSheet);
+}
+void imageViewerTask_Main(struct Task *task)
+{ 
 	//初始化缓冲区 
 	char bufferArray[128];
 	struct Buffer bufferTime;
 	initBuffer(&bufferTime,128,bufferArray);
-
-	//初始化定时器 
-	struct Timer *timerCur;
-	timerCur=allocTimer();
-	initTimer(timerCur,&bufferTime,1);
-	setTimer(timerCur,50);
-
-	//显示窗口
-	struct Sheet *consoleSheet;
-	unsigned char *consoleBuffer;
-	consoleSheet=allocSheet();
-	consoleBuffer=(unsigned char *)allocMem_4k(200*68,"image Viewer UI");//申请内存空间 
-	setBufInSheet(consoleSheet,consoleBuffer,200,68,-1);
-	makeWindow(consoleSheet,200,68,"Image Viewer");
-	slideSheet(consoleSheet,180,72);
-	updownSheet(consoleSheet,task->winID+1);
 	
-	//输入的信息 
-	char curInput[128];
-	int curPosX=0,length=0;//光标 
+	//显示窗口
+	struct Sheet *imageViewerSheet;
+	unsigned char *imageViewerBuffer;
+	imageViewerSheet=allocSheet();
+	slideSheet(imageViewerSheet,500,120);
+	imageViewerBuffer=(unsigned char *)allocMem(300*240,"Image Viewer UI");//申请内存空间 
+	setBufInSheet(imageViewerSheet,imageViewerBuffer,300,240,-1);
+	makeWindow(imageViewerSheet,300,240,"Image Viewer");
+	setHeightSheet(imageViewerSheet,task->winID+1);
+	
+	//显示信息 
+	refreshSheet(imageViewerSheet);
 	unsigned char data;
-	char str[128];
-	int flag=0,f1=0;
-	int t=0;
-	while (1);
-}
+	int flag=0;
+	loadImageFile(task->par[0],imageViewerSheet);
+	while (1)
+	{
+		flag=0;
+		io_cli();
+		if (getBuffer(&task->bufAll.mouse,&data))
+		{
+			io_sti();
+			flag=2;
+			switch(data)
+			{
+				//左键移动 
+				case 0:
+					slideSheet(imageViewerSheet,mdec.x,mdec.y);
+					break;
+				//右键关闭
+				case 2:
+					freeSheet(imageViewerSheet);
+					freeMem((unsigned int)imageViewerBuffer,300*240);
+					deleteWindow(task);
+					deleteTask(task);
+					break;
+			}
+		}
+		if (flag==0)
+			io_sti();
+	}
+} 
