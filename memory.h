@@ -13,10 +13,10 @@ struct MemoryList
 };
 extern struct MemoryList *meml;
 unsigned int memtest(unsigned int start,unsigned int end);
-unsigned int memtest_sub(unsigned int start,unsigned int end);
-void mem_init();
-unsigned int mem_freetotal();
-unsigned int mem_alloc(unsigned int size);
-int mem_free(unsigned int addr,unsigned int size);
-unsigned int mem_alloc_4k(unsigned int size);
-int mem_free_4k(unsigned int addr,unsigned int size);
+unsigned int memtestSub(unsigned int start,unsigned int end);
+void initMem();
+unsigned int freeTotalMem();
+unsigned int allocMem(unsigned int size);
+int freeMem(unsigned int addr,unsigned int size);
+unsigned int allocMem_4k(unsigned int size);
+int freeMem_4k(unsigned int addr,unsigned int size);

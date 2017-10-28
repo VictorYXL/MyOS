@@ -2,7 +2,7 @@
 #include"memory.h"
 #include"sheet.h"
 #include"graphic.h"
-void boxfill_sht(struct Sheet *sht,int x0,int y0,int pxsize,int pysize,unsigned char c)
+void boxfillOnSht(struct Sheet *sht,int x0,int y0,int pxsize,int pysize,unsigned char c)
 {
 	int i,j;
 	for (j=y0;j<y0+pysize;j++)
@@ -10,7 +10,7 @@ void boxfill_sht(struct Sheet *sht,int x0,int y0,int pxsize,int pysize,unsigned 
 			sht->buffer[j*sht->xsize+i]=c;
 }
 
-void putfont8_sht(struct Sheet *sht,int x,int y,char color,char c)
+void putfont8Onsht(struct Sheet *sht,int x,int y,char color,char c)
 {
 	int i,j;
 	char tmp[8]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
@@ -20,23 +20,23 @@ void putfont8_sht(struct Sheet *sht,int x,int y,char color,char c)
 			if ((font[i]&tmp[j])!=0)
 				sht->buffer[(y+i)*sht->xsize+x+j]=color;
 }
-void putstr_sht(struct Sheet *sht,int x,int y,char color,char *str)
+void putStrOnSht(struct Sheet *sht,int x,int y,char color,char *str)
 {
 	char *t=str;
 	while (*t!=0x00)
 	{
-		putfont8_sht(sht,x,y,color,*t);
+		putfont8Onsht(sht,x,y,color,*t);
 		x+=8;
 		t++;
 	}
 }
-void putstr_back_sht(struct Sheet *sht,int x,int y,int color,int backcolor,char *str,int length)
+void putStrAndBackOnSht(struct Sheet *sht,int x,int y,int color,int backcolor,char *str,int length)
 {
-	boxfill_sht(sht,x,y,length*8,16,backcolor);
-	putstr_sht(sht,x,y,color,str);
-	sheet_refreshSheetSub(sht,x,y,length*8,16);
+	boxfillOnSht(sht,x,y,length*8,16,backcolor);
+	putStrOnSht(sht,x,y,color,str);
+	refreshSubInSheet(sht,x,y,length*8,16);
 }
-void init_mouse_cursor(struct Sheet *sht)
+void initMouseCursor(struct Sheet *sht)
 {
 	//Êó±ê×ø±êÍ¼
 	static char cursor[18][17] = {
@@ -75,7 +75,7 @@ void init_mouse_cursor(struct Sheet *sht)
 			}
 }
 
-void put_block_sht(struct Sheet *sht,int x0,int y0,int pxsize,int pysize,char *block)
+void putBlockOnSht(struct Sheet *sht,int x0,int y0,int pxsize,int pysize,char *block)
 {
 	for (int y=0;y<pysize;y++)
 		for (int x=0;x<pxsize;x++)
@@ -83,7 +83,7 @@ void put_block_sht(struct Sheet *sht,int x0,int y0,int pxsize,int pysize,char *b
 				sht->buffer[(y0+y)*sht->xsize+x0+x]=block[y*pxsize+x];
 }
 
-void init_palette()
+void initPalette()
 {	
 	static unsigned char table_rgb[16][3] = 
 	{
@@ -104,11 +104,11 @@ void init_palette()
 		{0x00, 0x84, 0x84},	//Ç³°µÀ¶
 		{0x84, 0x84, 0x84}	//°µ»Ò
 	};
-	set_palette(0, 15, table_rgb);
+	setPalette(0, 15, table_rgb);
 	return;
 }
 
-void set_palette(int start,int end,unsigned char rgb[16][3])
+void setPalette(int start,int end,unsigned char rgb[16][3])
 {
 	int i,eflags;
 	eflags=io_load_eflags();
@@ -125,7 +125,7 @@ void set_palette(int start,int end,unsigned char rgb[16][3])
 	
 	io_store_eflags(eflags);
 }
-void init_screen_sht(struct Sheet *sht)
+void initScreenOnSht(struct Sheet *sht)
 {
 	//char *vram=sht->buffer;
 	
@@ -134,26 +134,26 @@ void init_screen_sht(struct Sheet *sht)
 	int y=sht->ysize;
 	
 	//»­ÈÎÎñ¿ò
-	boxfill_sht(sht,0,0,x,y-28,LIGHTBLUE);
-	boxfill_sht(sht,0,y-28,x,1,LIGHTGRAY);
-	boxfill_sht(sht,0,y-27,x,1,LIGHTGRAY);
-	boxfill_sht(sht,0,y-26,x,26,WHITE);
+	boxfillOnSht(sht,0,0,x,y-28,LIGHTBLUE);
+	boxfillOnSht(sht,0,y-28,x,1,LIGHTGRAY);
+	boxfillOnSht(sht,0,y-27,x,1,LIGHTGRAY);
+	boxfillOnSht(sht,0,y-26,x,26,WHITE);
 
-	boxfill_sht(sht,3,y-24,57,1,WHITE);
-	boxfill_sht(sht,2,y-24,1,21,WHITE);
-	boxfill_sht(sht,3,y-4,57,1,DULLGRAY);
-	boxfill_sht(sht,59,y-23,1,19,DULLGRAY);
-	boxfill_sht(sht,2,y-3,58,1,BLACK);
-	boxfill_sht(sht,60,y-24,1,22,BLACK);
+	boxfillOnSht(sht,3,y-24,57,1,WHITE);
+	boxfillOnSht(sht,2,y-24,1,21,WHITE);
+	boxfillOnSht(sht,3,y-4,57,1,DULLGRAY);
+	boxfillOnSht(sht,59,y-23,1,19,DULLGRAY);
+	boxfillOnSht(sht,2,y-3,58,1,BLACK);
+	boxfillOnSht(sht,60,y-24,1,22,BLACK);
 
-	boxfill_sht(sht,x-47,y-24,44,1,DULLGRAY);
-	boxfill_sht(sht,x-47,y-23,1,20,DULLGRAY);
-	boxfill_sht(sht,x-47,y-3,44,1,WHITE);
-	boxfill_sht(sht,x-3,y-24,1,22,WHITE);
+	boxfillOnSht(sht,x-47,y-24,44,1,DULLGRAY);
+	boxfillOnSht(sht,x-47,y-23,1,20,DULLGRAY);
+	boxfillOnSht(sht,x-47,y-3,44,1,WHITE);
+	boxfillOnSht(sht,x-3,y-24,1,22,WHITE);
 	return;
 }
 
-void putfont8_srn(struct BootInfo *binfo,int x,int y,char color,char c)
+void putfont8OnSrn(struct BootInfo *binfo,int x,int y,char color,char c)
 {
 	int i,j;
 	char tmp[8]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
@@ -164,19 +164,19 @@ void putfont8_srn(struct BootInfo *binfo,int x,int y,char color,char c)
 				binfo->vram[(y+i)*binfo->scrnx+x+j]=color;
 				
 }
-void putstr_srn(struct BootInfo *binfo,int x,int y,char color,char *str)
+void putStrOnSrn(struct BootInfo *binfo,int x,int y,char color,char *str)
 {
 	char *t=str;
 	while (*t!=0x00)
 	{
-		putfont8_srn(binfo,x,y,color,*t);
+		putfont8OnSrn(binfo,x,y,color,*t);
 		x+=8;
 		t++;
 	}
 }
-void make_window(struct Sheet *sht,int xsize,int ysize,char *title)
+void makeWindow(struct Sheet *sht,int xsize,int ysize,char *title)
 {
-	//boxfill_sht(sht,0,0,xsize,ysize,LIGHTRED);
+	//boxfillOnSht(sht,0,0,xsize,ysize,LIGHTRED);
 	static char closebtn[14][16] = 
 		{
 		"OOOOOOOOOOOOOOO@",
@@ -196,17 +196,17 @@ void make_window(struct Sheet *sht,int xsize,int ysize,char *title)
 		};
 	int x, y;
 	char c;
-	boxfill_sht(sht, 0,         0,         xsize ,		1, 			LIGHTGRAY);
-	boxfill_sht(sht, 1,         1,         xsize - 2, 	1, 			WHITE);
-	boxfill_sht(sht, 0,         0,         1,     		ysize , 	LIGHTGRAY);
-	boxfill_sht(sht, 1,         1,         1,        	ysize - 2, 	WHITE);
-	boxfill_sht(sht, xsize - 2, 1,         1,		 	ysize - 2, 	DULLGRAY);
-	boxfill_sht(sht, xsize - 1, 0,         1, 			ysize, 		BLACK);
-	boxfill_sht(sht, 2,         2,         xsize - 4, 	ysize - 4, 	WHITE);
-	boxfill_sht(sht, 3,         3,         xsize - 6, 	18, 		DULLINDIGO);
-	boxfill_sht(sht, 1,         ysize - 2, xsize - 2, 	1, 			DULLGRAY);
-	boxfill_sht(sht, 0,         ysize - 1, xsize, 		1,	 		BLACK);
-	putstr_sht(sht,16, 4, WHITE, title);
+	boxfillOnSht(sht, 0,         0,         xsize ,		1, 			LIGHTGRAY);
+	boxfillOnSht(sht, 1,         1,         xsize - 2, 	1, 			WHITE);
+	boxfillOnSht(sht, 0,         0,         1,     		ysize , 	LIGHTGRAY);
+	boxfillOnSht(sht, 1,         1,         1,        	ysize - 2, 	WHITE);
+	boxfillOnSht(sht, xsize - 2, 1,         1,		 	ysize - 2, 	DULLGRAY);
+	boxfillOnSht(sht, xsize - 1, 0,         1, 			ysize, 		BLACK);
+	boxfillOnSht(sht, 2,         2,         xsize - 4, 	ysize - 4, 	WHITE);
+	boxfillOnSht(sht, 3,         3,         xsize - 6, 	18, 		DULLINDIGO);
+	boxfillOnSht(sht, 1,         ysize - 2, xsize - 2, 	1, 			DULLGRAY);
+	boxfillOnSht(sht, 0,         ysize - 1, xsize, 		1,	 		BLACK);
+	putStrOnSht(sht,16, 4, WHITE, title);
 	for (y = 0; y < 14; y++) 
 	{
 		for (x = 0; x < 16; x++) 
@@ -228,5 +228,20 @@ void make_window(struct Sheet *sht,int xsize,int ysize,char *title)
 			sht->buffer[(5 + y) * xsize + (xsize - 21 + x)] = c;
 		}
 	}
+	return;
+}
+
+void makeTextBox(struct Sheet *sht, int x0, int y0, int sx, int sy, int c)
+{
+	int x1 = x0 + sx, y1 = y0 + sy;
+	boxfillOnSht(sht, x0 - 2, y0 - 3, sx + 4, 1		, DULLGRAY);
+	boxfillOnSht(sht, x0 - 3, y0 - 3, 1		, sy + 5, DULLGRAY);
+	boxfillOnSht(sht, x0 - 3, y1 + 2, sx + 5, 1		, WHITE);
+	boxfillOnSht(sht, x1 + 2, y0 - 3, 1		, sy + 6, WHITE);
+	boxfillOnSht(sht, x0 - 1, y0 - 2, sx + 2, 1		, BLACK);
+	boxfillOnSht(sht, x0 - 2, y0 - 2, 1		, sy + 3, BLACK);
+	boxfillOnSht(sht, x0 - 2, y1 + 1, sx + 3, 1		, LIGHTGRAY);
+	boxfillOnSht(sht, x1 + 1, y0 - 2, 1		, sy + 4, LIGHTGRAY);
+	boxfillOnSht(sht, x0 - 1, y0 - 1, sx + 2, sy + 2, c);
 	return;
 }

@@ -20,13 +20,13 @@ struct SheetControl
 extern struct SheetControl *scl;
 /*extern struct BootInfo *binfo;
 extern struct MemoryList *meml;*/
-struct SheetControl* SCL_init(struct BootInfo *binfo);
-struct Sheet *sheet_alloc();
-void sheet_setbuf(struct Sheet *sht,unsigned char *buf,int xsize,int ysize,int col_inv);
-void sheet_updown(struct Sheet *sht,int height);
-void sheet_slide(struct Sheet* sht,int vx0,int vy0);
-void sheet_free(struct Sheet* sht);
-void sheet_refreshSub(int x0,int y0,int pxsize,int pysize,int h0);
-void sheet_refreshAll();
-void sheet_refreshSheet(struct Sheet *sht);
-void sheet_refreshSheetSub(struct Sheet *sht,int x0,int y0,int xsize,int ysize);
+struct SheetControl* initSCL(struct BootInfo *binfo);
+struct Sheet *allocSheet();
+void setBufInSheet(struct Sheet *sht,unsigned char *buf,int xsize,int ysize,int col_inv);
+void updownSheet(struct Sheet *sht,int height);
+void slideSheet(struct Sheet* sht,int vx0,int vy0);
+void freeSheet(struct Sheet* sht);
+void refreshSubSheet(int x0,int y0,int pxsize,int pysize,int h0);
+void refreshAllSheet();
+void refreshSheet(struct Sheet *sht);
+void refreshSubInSheet(struct Sheet *sht,int x0,int y0,int xsize,int ysize);

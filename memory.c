@@ -30,7 +30,7 @@ unsigned int memtest(unsigned int start,unsigned int end)
 		store_cr0(cr0);
 	}
 	
-	i=memtest_sub(start,end);//内存检查
+	i=memtestSub(start,end);//内存检查
 
 	if (flg486)
 	{
@@ -42,7 +42,7 @@ unsigned int memtest(unsigned int start,unsigned int end)
 	return i;
 		
 }
-unsigned int memtest_sub(unsigned int start,unsigned int end)
+unsigned int memtestSub(unsigned int start,unsigned int end)
 {
 	unsigned int i,*p,old,pat0=0xaa55aa55,pat1=0x55aa55aa;
 	for (i=start;i<=end;i+=0x1000)
@@ -63,12 +63,12 @@ unsigned int memtest_sub(unsigned int start,unsigned int end)
 	return i;
 }
 
-void mem_init()
+void initMem()
 {
 	meml->freesize=0;
 	meml->maxfreesize=0;
 }
-unsigned int mem_freetotal()
+unsigned int freeTotalMem()
 {
 	int i,t=0;
 	for (i=0;i<meml->maxfreesize;i++) 
@@ -76,7 +76,7 @@ unsigned int mem_freetotal()
 	return t;
 }
 //分配空间 
-unsigned int mem_alloc(unsigned int size)
+unsigned int allocMem(unsigned int size)
 {
 	
 	int i,a,j;
@@ -97,7 +97,7 @@ unsigned int mem_alloc(unsigned int size)
 		}
 	}
 }
-int mem_free(unsigned int addr,unsigned int size)
+int freeMem(unsigned int addr,unsigned int size)
 {
 	int i,j;
 	//获取待插入位置 
@@ -139,18 +139,18 @@ int mem_free(unsigned int addr,unsigned int size)
 	return 0;
 }
 //一次申请4KB
-unsigned int mem_alloc_4k(unsigned int size)
+unsigned int allocMem_4k(unsigned int size)
 {
 	unsigned int a;
 	size=(size+0xfff)&0xfffff000;
-	a=mem_alloc(size);
+	a=allocMem(size);
 	return a;
 }
 //一次释放4KB
-int mem_free_4k(unsigned int addr,unsigned int size)
+int freeMem_4k(unsigned int addr,unsigned int size)
 {
 	unsigned int a;
 	size=(size+0xfff)&0xfffff000;
-	a=mem_free(addr,size);
+	a=freeMem(addr,size);
 	return a;
 }

@@ -14,8 +14,8 @@ struct BufferAll
 };
 extern struct BufferAll allbuf;
 
-void buffer_init(struct Buffer *buffer,int bufferSize,unsigned char *tmp,struct Task *task);
-int buffer_put(struct Buffer *buffer,unsigned char data);
-int buffer_get(struct Buffer *buffer,unsigned char *data);
-int buffer_fullCount(struct Buffer *buffer);
-int buffer_emptyCount(struct Buffer *buffer);
+void initBuffer(struct Buffer *buffer,int bufferSize,unsigned char *tmp,struct Task *task);
+int putBuffer(struct Buffer *buffer,unsigned char data);
+int getBuffer(struct Buffer *buffer,unsigned char *data);
+int fullCountBuffer(struct Buffer *buffer);
+int emptyCountBuffer(struct Buffer *buffer);

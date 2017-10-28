@@ -9,7 +9,7 @@ void initTask()
 {
 	int i=0;
 	struct Segment_Descriptor *gdt=(struct Segment_Descriptor *)ADR_GDT;
-	taskctl=(struct TaskCTL *)mem_alloc_4k(sizeof (struct TaskCTL));
+	taskctl=(struct TaskCTL *)allocMem_4k(sizeof (struct TaskCTL));
 	for (i=0;i<MAX_TASKS;i++) 
 	{
 		taskctl->tasks0[i].flags=TASK_UNALLOCED;

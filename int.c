@@ -59,7 +59,7 @@ void inthandler20(int *esp)
 				//任务切换的程序 
 				if (taskTimer==&timerctl.timer[i])//任务切换定时器 
 					ts=1; 
-				else buffer_put(timerctl.timer[i].timeoutBuffer,timerctl.timer[i].timeoutData);//其他定时器 
+				else putBuffer(timerctl.timer[i].timeoutBuffer,timerctl.timer[i].timeoutData);//其他定时器 
 			}else if (timerctl.timer[i].timeout<timerctl.next)
 					timerctl.next=timerctl.timer[i].timeout;
 		}
@@ -75,7 +75,7 @@ void inthandler21(int *esp)
 	//键盘中断是IRQ1，向PIC0发送0x(1+60)即可
 	io_out8(PIC0_OCW2,0x61);
 	unsigned char data=io_in8(PORT_KEYDAT);
-	buffer_put(&allbuf.key,data);
+	putBuffer(&allbuf.key,data);
 	return;
 }
 //不明白是干啥的
@@ -92,6 +92,6 @@ void inthandler2c(int *esp)
 	io_out8(PIC1_OCW2,0x64);
 	io_out8(PIC0_OCW2,0x62);
 	unsigned char data=io_in8(PORT_KEYDAT);
-	buffer_put(&allbuf.mouse,data);
+	putBuffer(&allbuf.mouse,data);
 	return;
 } 

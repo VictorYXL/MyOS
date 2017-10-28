@@ -3,7 +3,7 @@
 
 struct BufferAll allbuf;
 
-void buffer_init(struct Buffer *buffer,int bufferSize,unsigned char *tmp,struct Task *task)
+void initBuffer(struct Buffer *buffer,int bufferSize,unsigned char *tmp,struct Task *task)
 {
 	buffer->bufferSize=bufferSize;
 	buffer->data=tmp;
@@ -14,7 +14,7 @@ void buffer_init(struct Buffer *buffer,int bufferSize,unsigned char *tmp,struct 
 	buffer->task=task; 
 	return; 
 }
-int buffer_put(struct Buffer *buffer,unsigned char data)
+int putBuffer(struct Buffer *buffer,unsigned char data)
 {
 	//Ð´ÈëÊý¾Ý 
 	if (buffer->free==0)
@@ -33,7 +33,7 @@ int buffer_put(struct Buffer *buffer,unsigned char data)
 			runTask(buffer->task);
 	return 1;
 }
-int buffer_get(struct Buffer *buffer,unsigned char *data)
+int getBuffer(struct Buffer *buffer,unsigned char *data)
 {
 	if (buffer->free==buffer->bufferSize)
 		return 0;
@@ -43,11 +43,11 @@ int buffer_get(struct Buffer *buffer,unsigned char *data)
 	buffer->free++;
 	return 1;
 }
-int buffer_fullCount(struct Buffer *buffer)
+int fullCountBuffer(struct Buffer *buffer)
 {
 	return buffer->bufferSize-buffer->free;
 }
-int buffer_emptyCount(struct Buffer *buffer)
+int emptyCountBuffer(struct Buffer *buffer)
 {
 	return buffer->free;
 }
