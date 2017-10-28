@@ -91,10 +91,74 @@ void sheet_updown(struct SheetControl *scl,struct Sheet *sht,int height)
 		scl->top++;
 	}
 	//重新绘制图层 
-	sheet_refresh(scl);
+	sheet_refreshAll(scl);
 }
-
-void sheet_refresh(struct SheetControl *scl)
+//移动图层 
+void sheet_slide(struct SheetControl *scl,struct Sheet* sht,int vx0,int vy0)
+{
+	int old_x0=sht->x0,old_y0=sht->y0;
+	sht->x0=vx0;
+	sht->y0=vy0;
+	if (sht->height>=0)//正在显示 
+	{
+		//不考虑优化直接刷新整个屏幕
+		//sheet_refreshAll(scl);
+		//考虑优化 ，只刷新有变动的区域（移动前位置与移动后位置） 
+		sheet_refreshSub(scl,old_x0,old_y0,sht->xsize,sht->ysize);
+		sheet_refreshSub(scl,vx0,vy0,sht->xsize,sht->ysize);
+	}
+	return;
+}
+//释放图层 
+void sheet_free(struct SheetControl *scl,struct Sheet* sht)
+{
+	//隐藏该图层并置未使用标志
+	if (sht->height>=0) 
+		sheet_updown(scl,sht,-1);
+	sht->flags=0;
+	return;
+}
+//刷新一部分屏幕 (x0,y0)是相对屏幕坐标 
+void sheet_refreshSub(struct SheetControl *scl,int x0,int y0,int pxsize,int pysize)
+{
+	int h,vx,vy,sx,sy;//(vx,vy) 表示整个画面中的坐标 (sx,sy)表示图层中的坐标
+	int vx0,vx1,vy0,vy1;
+	unsigned char *buf,c,*vram=scl->vram;
+	struct Sheet *sht;
+	if (x0<0) 
+		x0=0;
+	if (x0+pxsize>scl->xsize)
+		pxsize=scl->xsize-x0;
+	if (y0<0) 
+		y0=0;
+	if (y0+pysize>scl->ysize)
+		pysize=scl->ysize-y0;
+	//从低到高绘制图层 
+	for (h=0;h<=scl->top;h++)
+	{
+		sht=scl->sheetp[h];
+		buf=sht->buffer;
+		/*
+		vx0~vx1,vy0~vy1	该图层与绘制区域的交际 
+		*/
+		vy0=y0>sht->y0?y0:sht->y0;
+		vy1=y0+pysize<sht->y0+sht->ysize?y0+pysize:sht->y0+sht->ysize;
+		vx0=x0>sht->x0?x0:sht->x0;
+		vx1=x0+pxsize<sht->x0+sht->xsize?x0+pxsize:sht->x0+sht->xsize;
+		for (vy=vy0;vy<vy1;vy++)
+			for (vx=vx0;vx<vx1;vx++)
+			{
+				sy=vy-sht->y0;
+				sx=vx-sht->x0;
+				c=buf[sy*sht->xsize+sx];
+				//该像素不是透明 
+				if (c!=sht->col_inv)
+					vram[vy*scl->xsize+vx]=c;
+			}
+	}
+}
+//绘刷新整个屏幕 
+void sheet_refreshAll(struct SheetControl *scl)
 {
 	int h,sx,sy,vx,vy;//(sx,sy)表示单个图层中的坐标 (vx,vy) 表示整个画面中的坐标 
 	unsigned char *buf,c,*vram=scl->vram;
@@ -118,22 +182,17 @@ void sheet_refresh(struct SheetControl *scl)
 		}
 	}
 }
-
-//移动图层 
-void sheet_slide(struct SheetControl *scl,struct Sheet* sht,int vx0,int vy0)
+//刷新一个图层
+void sheet_refreshSheet(struct SheetControl *scl,struct Sheet *sht) 
 {
-	sht->x0=vx0;
-	sht->y0=vy0;
-	if (sht->height>=0)//正在显示 
-		sheet_refresh(scl);
-	return;
+	//如果图层在显示，则刷新图层所在区域 
+	if (sht->height>=0)
+		sheet_refreshSub(scl,sht->x0,sht->y0,sht->xsize,sht->ysize);
 }
-//释放图层 
-void sheet_free(struct SheetControl *scl,struct Sheet* sht)
+//刷新一个图层的一部分（相对图层的位置） 
+void sheet_refreshSheetSub(struct SheetControl *scl,struct Sheet *sht,int x0,int y0,int xsize,int ysize) 
 {
-	//隐藏该图层并置未使用标志
-	if (sht->height>=0) 
-		sheet_updown(scl,sht,-1);
-	sht->flags=0;
-	return;
+	//如果图层在显示，则刷新图层所在区域的一部分 
+	if (sht->height>=0)
+		sheet_refreshSub(scl,sht->x0+x0,sht->y0+y0,xsize,ysize);	
 }

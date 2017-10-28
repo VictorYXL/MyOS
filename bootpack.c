@@ -22,7 +22,6 @@ void HariMain()
 	//初始化缓冲区 
 	unsigned char data;
 	unsigned char keyb[32],mouseb[128];
-	struct BufferAll allbuf;
 	buffer_init(&allbuf.key,32,keyb);
 	buffer_init(&allbuf.mouse,128,mouseb);
 	
@@ -30,6 +29,7 @@ void HariMain()
 	//先初始化鼠标控制电路（隐藏在键盘控制电路里）
 	//再激活鼠标
 	struct Mouse_Dec mdec;
+	int mx=100,my=100;
 	init_keyboard();//先初始化键盘控制电路
 	enable_mouse(&mdec);//再激活鼠标
 	
@@ -46,10 +46,11 @@ void HariMain()
 	mem_init(meml);
 	mem_free(meml,0x00001000,0x0009e000);
 	mem_free(meml,0x00400000,size-0x00400000);
-	
+
 	//初始化图层表
 	struct SheetControl *scl;
 	scl=SCL_init(meml,binfo);
+
 	//初始化桌面图层
 	struct Sheet *sht_back;
 	unsigned char *back_buf;
@@ -59,7 +60,75 @@ void HariMain()
 	init_screen_sht(sht_back);//画图层
 	sheet_slide(scl,sht_back,0,0);//移动图层位置
 	sheet_updown(scl,sht_back,0);//挪动图层高度，到底层 
-	while (1);
+	//初始化鼠标图层
+	struct Sheet *sht_mouse;
+	char mousebuf[256];
+	sht_mouse=sheet_alloc(scl);
+	sheet_setbuf(sht_mouse,mousebuf,16,16,99);
+	init_mouse_cursor(sht_mouse);
+	sheet_slide(scl, sht_mouse, mx, my);
+	sheet_updown(scl,sht_mouse,1);
+
+	//显示内存大小
+	char str[128];
+	sprintf (str,"Memory: %dM",size/1024/1024);
+	boxfill_sht(sht_back,0,0,30*8,16,LIGHTGRAY);
+	putstr_sht(sht_back,0,0,LIGHTRED,str);
+	sheet_refreshAll(scl);
+	
+	//程序大循环 
+	int p=0;
+	while(1)
+	{
+		io_cli();
+		if (buffer_get(&(allbuf.key),&data))
+		{
+			io_sti();
+			sprintf (str,"Key:%x",data);
+			boxfill_sht(sht_back,0,16*1,30*8,16,LIGHTGRAY);
+			putstr_sht(sht_back,0,1*16,LIGHTRED,str);
+			sheet_refreshSheetSub(scl,sht_back,0,16*1,30*8,16);
+			//sheet_refresh(scl);
+			
+		}else if (buffer_get(&allbuf.mouse,&data))
+		{
+			io_sti();
+			if (mouse_decode(&mdec,data))
+			{
+				sprintf (str,"Mouse:");
+				if (mdec.lbtn)
+					sprintf (str,"%sL",str);
+				if (mdec.mbtn)
+					sprintf (str,"%sM",str);				
+				if (mdec.rbtn)
+					sprintf (str,"%sR",str);
+				
+				//boxfill_sht(sht_back,mx,my,16,16,LIGHTBLUE);
+				
+				mx+=mdec.dx;
+				if (mx<0)
+					mx=0;
+				if (mx>binfo->scrnx-1)
+					mx=binfo->scrnx-1;
+				my+=mdec.dy;
+				if (my<0)
+					my=0;
+				if (my>binfo->scrny-1)
+					my=binfo->scrny-1;
+				
+				sprintf (str,"%d,%s (%d,%d,%d,%d)",p++,str,mx,my,mdec.dx,mdec.dy);
+				boxfill_sht(sht_back,0,2*16,30*8,16,LIGHTGRAY);
+				putstr_sht(sht_back,0,16*2,LIGHTRED,str);
+				sheet_refreshSheetSub(scl,sht_back,0,16*2,30*8,16);
+				
+				sheet_slide(scl,sht_mouse,mx,my);
+				//put_block_sht(sht_back,mx,my,16,16,mcursor);
+				
+			}
+		}else io_stihlt();
+	}
+	
+	
 	/*//初始化屏幕 
 	binfo=(struct BootInfo *) BOOTADDR;//屏幕长宽，图像缓冲区起始位置
 	meml=(struct MemoryList *)MEMORYLISTADDR;

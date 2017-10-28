@@ -11,7 +11,7 @@ struct BootInfo
 void io_hlt();
 void io_stihlt();
 void write_mem8(int addr, int data);
-void io_cli();
+void io_cli(); 
 void io_sti();
 int io_in8(int port);
 void io_out8(int port,int data);

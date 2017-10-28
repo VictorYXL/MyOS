@@ -25,11 +25,11 @@ _write_mem8:					;void write_mem8(int addr,int data) 向指定地址写入int，参数传递
 	RET
 	
 _io_cli:						;void io_cli(void)
-	CLI
+	CLI							;不允许中断 
 	RET
 	
 _io_sti:						;void io_cli(void)
-	STI
+	STI							;允许中断 
 	RET
 	
 _io_stihlt:						;void io_cli(void)

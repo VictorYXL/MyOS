@@ -35,13 +35,13 @@ void init_pic(void)
 	 
 }
 //键盘中断处理程序 
-void inthandler21(int *esp,struct Buffer *keybuf)
+void inthandler21(int *esp)
 {
 	//通知PIC中断已经接受 
 	//键盘中断是IRQ1，向PIC0发送0x(1+60)即可
 	io_out8(PIC0_OCW2,0x61);
 	unsigned char data=io_in8(PORT_KEYDAT);
-	buffer_put(keybuf,data);
+	buffer_put(&allbuf.key,data);
 	return;
 }
 //不明白是干啥的
@@ -52,12 +52,12 @@ void inthandler27(int *esp)
 }
 
 //鼠标中断处理程序 
-void inthandler2c(int *esp,struct Buffer *mousebuf)
+void inthandler2c(int *esp)
 {
 	//鼠标中断是IRQ12，向IRQ0发送2，也要向IRQ1发送4（从PIC的第5个中断）
 	io_out8(PIC1_OCW2,0x64);
 	io_out8(PIC0_OCW2,0x62);
 	unsigned char data=io_in8(PORT_KEYDAT);
-	buffer_put(mousebuf,data);
+	buffer_put(&allbuf.mouse,data);
 	return;
 } 
