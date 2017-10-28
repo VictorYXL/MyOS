@@ -6,10 +6,7 @@ struct SheetControl *scl;
 struct SheetControl* initSCL(struct BootInfo *binfo)
 {
 	int i;
-	struct SheetControl *scl;
-	scl=(struct SheetControl *)allocMem_4k(sizeof(struct SheetControl));
-	if (scl==0)
-		return 0;
+	scl=(struct SheetControl *)allocMem(sizeof(struct SheetControl),"Sheet Control");
 	scl->vram=binfo->vram;
 	scl->xsize=binfo->scrnx;
 	scl->ysize=binfo->scrny;
@@ -48,7 +45,9 @@ void setHeightSheet(struct Sheet *sht,int height)
 	sht->height=height;
 	if (scl->top<height)
 		scl->top=height;
-	scl->sheetp[height]=sht;
+	if (height>=0)
+		scl->sheetp[height]=sht;
+	//refreshAllSheet();
 	refreshSubSheet(sht->x0,sht->y0,sht->xsize,sht->ysize,0);
 }
 
@@ -130,6 +129,7 @@ void freeSheet(struct Sheet* sht)
 	//隐藏该图层并置未使用标志
 	if (sht->height>=0) 
 		updownSheet(sht,-1);
+	//setHeightSheet(sht,-1);
 	sht->flags=0;
 	return;
 }
@@ -171,6 +171,24 @@ void refreshSubSheet(int x0,int y0,int pxsize,int pysize,int h0)
 					vram[vy*scl->xsize+vx]=c;
 			}
 	}
+	
+	//鼠标图层 
+	sht=&scl->sheet[1];
+	buf=sht->buffer;
+	vy0=y0>sht->y0?y0:sht->y0;
+	vy1=y0+pysize<sht->y0+sht->ysize?y0+pysize:sht->y0+sht->ysize;
+	vx0=x0>sht->x0?x0:sht->x0;
+	vx1=x0+pxsize<sht->x0+sht->xsize?x0+pxsize:sht->x0+sht->xsize;
+	for (vy=vy0;vy<vy1;vy++)
+		for (vx=vx0;vx<vx1;vx++)
+		{
+			sy=vy-sht->y0;
+			sx=vx-sht->x0;
+			c=buf[sy*sht->xsize+sx];
+			//该像素不是透明 
+			if (c!=sht->col_inv)
+				vram[vy*scl->xsize+vx]=c;
+		}
 }
 //绘刷新整个屏幕 
 void refreshAllSheet()
@@ -178,6 +196,7 @@ void refreshAllSheet()
 	int h,sx,sy,vx,vy;//(sx,sy)表示单个图层中的坐标 (vx,vy) 表示整个画面中的坐标 
 	unsigned char *buf,c,*vram=scl->vram;
 	struct Sheet *sht;
+	
 	//从低到高绘制图层 
 	for (h=0;h<=scl->top;h++)
 	{
@@ -194,6 +213,22 @@ void refreshAllSheet()
 				if (c!=sht->col_inv)
 					vram[vy*scl->xsize+vx]=c;
 			}
+		}
+	}
+	
+	//鼠标图层 
+	sht=&scl->sheet[1];
+	buf=sht->buffer;
+	for (sy=0;sy<sht->ysize;sy++)
+	{
+		vy=sht->y0+sy;
+		for (sx=0;sx<sht->xsize;sx++)
+		{
+			vx=sht->x0+sx;
+			c=buf[sy*sht->xsize+sx];
+			//该像素不是透明 
+			if (c!=sht->col_inv)
+				vram[vy*scl->xsize+vx]=c;
 		}
 	}
 }

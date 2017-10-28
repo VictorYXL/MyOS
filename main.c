@@ -60,9 +60,14 @@ void HariMain()
 	meml=(struct MemoryList *)MEMORYLISTADDR;
 	int size;
 	initMem();
+	meml->maxsize=0x7fffffff; 
 	//size=memtest(0x00400000,0xbfffffff);//内存测试 
 	freeMem(0x00001000,0x0009e000);
 	freeMem(0x00400000,size-0x00400000);
+	meml->used[0].addr=0x9e000;
+	meml->used[0].size=0x00400000-0x9e000;
+	meml->used[0].flag=1;
+	sprintf (meml->used[0].status,"System");
 	
 	//初始化键盘数据
 	char keyTable[0x160]=
@@ -91,16 +96,17 @@ void HariMain()
 
 	//初始化图层表
 	scl=initSCL(binfo);
+	sprintf (meml->used[1].status,"Sheet Control");
 
 	//初始化桌面图层
 	struct Sheet *sht_back;
 	unsigned char *buf_back;
 	sht_back=allocSheet();//申请图层 
-	buf_back=(unsigned char *)allocMem_4k(binfo->scrnx*binfo->scrny);//申请内存空间 
+	buf_back=(unsigned char *)allocMem_4k(binfo->scrnx*binfo->scrny,"Background UI");//申请内存空间 
 	setBufInSheet(sht_back,buf_back,binfo->scrnx,binfo->scrny,-1);//初始化图层，其中无透明色 
 	initScreenOnSht(sht_back);//画图层
 	slideSheet(sht_back,0,0);//移动图层位置
-	setHeightSheet(sht_back,0);
+	updownSheet(sht_back,0);
 	
 	//初始化鼠标图层
 	struct Sheet *sht_mouse;
@@ -109,12 +115,12 @@ void HariMain()
 	setBufInSheet(sht_mouse,mousebuf,16,16,99);
 	initMouseCursor(sht_mouse);
 	slideSheet(sht_mouse, mdec.x, mdec.y);
-	setHeightSheet(sht_mouse,255); 
+	updownSheet(sht_mouse,1); 
 	
 	//显示基本信息 
 	char str[128]; 
 	//显示内存大小
-	sprintf (str,"Memory: %dM",size/1024/1024);
+	sprintf (str,"Memory: %dM",meml->maxsize/1024/1024);
 	putStrAndBackOnSht(sht_back,0,0,LIGHTRED,LIGHTGRAY,str,-1);
 	//显示Focus窗口
 	sprintf (str,"Fouse: Console");
@@ -134,10 +140,10 @@ void HariMain()
 	//定义Console任务
 	struct Task *consoleTask;
 	consoleTask=allocTask();
-	initTask(consoleTask,(int)&consoleTask_Main);
+	initTask(consoleTask,(int)&consoleTask_Main,"Console",11);
 	createWindow(consoleTask,"Console");
 	runTask(consoleTask);
-	while(1);
+	
 	//定义calculator任务
 	/*struct Task *calculatorTask;
 	calculatorTask=allocTask();
@@ -154,8 +160,8 @@ void HariMain()
 		flag=0;
 		if (window.isChanged)
 		{
-			sprintf (str,"Focus: %s",window.winName[window.focus]);//,window.focus,window.winCount,taskctl->now,taskctl->runningCount,taskctl->runningCount);
-			putStrAndBackOnSht(sht_back,0,1*16,LIGHTRED,LIGHTBLUE,str,40);
+			sprintf (str,"Focus: %s, winCount: %d, runningCount: %d",window.winName[window.focus],window.winCount,taskctl->runningCount);
+			putStrAndBackOnSht(sht_back,0,1*16,LIGHTRED,LIGHTBLUE,str,60);
 			window.isChanged=0;
 		}
 		//检查各类中断 
@@ -351,3 +357,5 @@ void calculatorTask_Main(struct Task *task)
 		} 
 	}
 }*/ 
+
+

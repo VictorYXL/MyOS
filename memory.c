@@ -1,5 +1,6 @@
 #include"memory.h"
 #include"nasmfunc.h"
+#include<stdio.h>
 /*
 内存的管理使用空闲表法
 使用内存前先检查内存 
@@ -38,7 +39,7 @@ unsigned int memtest(unsigned int start,unsigned int end)
 		cr0&=~CR0_CACHE_DISABLE;//允许缓存
 		store_cr0(cr0);
 	}
-	
+	meml->maxsize=i;
 	return i;
 		
 }
@@ -67,6 +68,11 @@ void initMem()
 {
 	meml->freesize=0;
 	meml->maxfreesize=0;
+	for (int i=0;i<MEMORYLISTFREES;i++)
+	{
+		meml->used[i].flag=0;
+		sprintf (meml->used[i].status,"System Stack");
+	}
 }
 unsigned int freeTotalMem()
 {
@@ -76,7 +82,7 @@ unsigned int freeTotalMem()
 	return t;
 }
 //分配空间 
-unsigned int allocMem(unsigned int size)
+unsigned int allocMem(unsigned int size,char *status)
 {
 	
 	int i,a,j;
@@ -93,6 +99,16 @@ unsigned int allocMem(unsigned int size)
 				for (j=i;j<meml->freesize;j++)
 					meml->free[j]=meml->free[j+1];
 			}
+			//增加使用记录
+			for (int j=0;j<MEMORYLISTFREES;j++) 
+				if (meml->used[j].flag==0)
+				{
+					meml->used[j].addr=a;
+					meml->used[j].size=size;
+					sprintf (meml->used[j].status,"%s",status);
+					meml->used[j].flag=1;
+					break;
+				}
 			return a;
 		}
 	}
@@ -117,33 +133,38 @@ int freeMem(unsigned int addr,unsigned int size)
 			for (j=i;j<meml->maxfreesize;j++) 
 				meml->free[j]=meml->free[j+1];
 		}
-		return 0;
 	}
 	//仅与后表项可以合并 
-	if (i<meml->freesize && meml->free[i].addr==addr+size)
+	else if (i<meml->freesize && meml->free[i].addr==addr+size)
 	{
 		meml->free[i].addr=addr; 
 		meml->free[i].size=addr;
-		return 0;
 	}
 	//不可合并
-	if (meml->freesize>=MEMORYLISTFREES-1)//超过表项的最大值 
-		return -1;
-	for (j=i;j<meml->freesize;j++) 
-		meml->free[j+1]=meml->free[j];
-	meml->free[i].addr=addr;
-	meml->free[i].size=size;
-	if (meml->free[i].size>meml->maxfreesize)
-		meml->maxfreesize=meml->free[i].size;
-	meml->freesize++; 
+	else 
+	{
+		if (meml->freesize>=MEMORYLISTFREES-1)//超过表项的最大值 
+			return -1;
+		for (j=i;j<meml->freesize;j++) 
+			meml->free[j+1]=meml->free[j];
+		meml->free[i].addr=addr;
+		meml->free[i].size=size;
+		if (meml->free[i].size>meml->maxfreesize)
+			meml->maxfreesize=meml->free[i].size;
+		meml->freesize++; 
+	}
+	//删除记录 
+	for (i=0;i<MEMORYLISTFREES;i++)
+		if (meml->used[i].addr==addr)
+			meml->used[i].flag=0;
 	return 0;
 }
 //一次申请4KB
-unsigned int allocMem_4k(unsigned int size)
+unsigned int allocMem_4k(unsigned int size,char *status)
 {
 	unsigned int a;
 	size=(size+0xfff)&0xfffff000;
-	a=allocMem(size);
+	a=allocMem(size,status);
 	return a;
 }
 //一次释放4KB

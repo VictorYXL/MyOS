@@ -2,7 +2,7 @@
 #define BOOTADDR		0x00000ff0
 #define MEMORYLISTADDR	0x003c0000
 void HariMain();
-void windowTask_Main(struct Task *task);
+//void windowTask_Main(struct Task *task);
 //void calculatorTask_Main(struct Task *task); 
 //extern struct window window; 
 extern struct Window window;

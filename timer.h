@@ -1,7 +1,7 @@
 #pragma once
 #define PIT_CTRL		0x0043 
 #define PIT_CNT0		0x0040
-#define TIMER_MAX		500
+#define TIMER_MAX		500 
 #define TIMER_UNALLOCED	0
 #define TIMER_ALLOCED	1
 #define TIMER_USING		2 

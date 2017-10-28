@@ -209,55 +209,63 @@ void calculatorTask_Main(struct Task *task)
 	char bufferArray[128];
 	struct Buffer bufferTime;
 	initBuffer(&bufferTime,128,bufferArray);
-
+	
 	//初始化定时器 
 	struct Timer *timerCur;
 	timerCur=allocTimer();
 	initTimer(timerCur,&bufferTime,1);
 	setTimer(timerCur,50);
 	
-	//初始化控制台图层
+	//初始化计算器图层
 	struct Sheet *calculatorSheet;
 	unsigned char *calculatorBuffer;	
-	calculatorBuffer=(unsigned char *)allocMem_4k(512*310);
+	calculatorBuffer=(unsigned char *)allocMem(312*210,"Calculator UI");
 	calculatorSheet=allocSheet();
-	setBufInSheet(calculatorSheet,calculatorBuffer,512,310,-1);//没有透明色
+	setBufInSheet(calculatorSheet,calculatorBuffer,312,210,-1);//没有透明色
 	slideSheet(calculatorSheet,202,8);
-	makeWindow(calculatorSheet,512,310,"Calculator");
-	makeTextBox(calculatorSheet,8,27,496,276,BLACK);
-	setHeightSheet(calculatorSheet,task->winID);
+	makeWindow(calculatorSheet,312,210,"Calculator");
+	makeTextBox(calculatorSheet,8,27,296,176,BLACK);
+	updownSheet(calculatorSheet,task->winID+1);
+	
 	
 	unsigned char data;
 	int curPosX=0,curPosY=0,length=0;
-	char curInput[128];
+	char *curInput=(unsigned char *)allocMem(20,"Calculator Input");
 	curInput[0]='>';
 	curInput[1]=' ';
+	curInput[2]='\0';
 	curPosX=2;
-	char str[128];
-	int flag=0;
+	char str[40];
+	int flag=0,f1=0;
 	
 	sprintf (str,"%s",curInput);
-	putStrAndBackOnSht(calculatorSheet,8,28+16*curPosY,WHITE,BLACK,str,40);
+	putStrAndBackOnSht(calculatorSheet,8,28+16*curPosY,WHITE,BLACK,str,20);
 	while (1)
 	{
 		flag=0;
 		if (window.focus!=task->winID)//焦点不在，取消光标 
 		{
-			boxfillOnSht(calculatorSheet,8+8*curPosX,28+16*curPosY,8,15,BLACK);
-			refreshSubInSheet(calculatorSheet,8+8*curPosX,28+16*curPosY,8,15); 
+			if (f1==0)
+			{
+				boxfillOnSht(calculatorSheet,8+8*curPosX,28+16*curPosY,8,15,BLACK);
+				refreshSubInSheet(calculatorSheet,8+8*curPosX,28+16*curPosY,8,15); 
+				f1=1;
+			}
 			continue;
 		}else if (timerCur->flag==TIMER_ALLOCED)//重新获得焦点，重启光标 
 		{
 			initTimer(timerCur,&bufferTime,1);
 			setTimer(timerCur,50);
 		}
+		f1=0;
 		io_cli();
 		if (getBuffer(&task->bufAll.key,&data))
 		{
+			io_sti();
 			switch (data)
 			{
 				case 0x0e://退格键 
-					if (curPosX>0)
+					if (curPosX>2)
 					{
 						curPosX--;
 						length--; 
@@ -275,6 +283,7 @@ void calculatorTask_Main(struct Task *task)
 						curPosX++;
 					break;
 				case 0x1c://回车键 
+					putStrAndBackOnSht(calculatorSheet,8,28+16*curPosY,WHITE,BLACK,str,37);
 					boxfillOnSht(calculatorSheet,8+8*curPosX,28+16*curPosY,8,15,BLACK);
 					curPosY++;//下一行 
 					//删除 > 
@@ -284,14 +293,14 @@ void calculatorTask_Main(struct Task *task)
 					int res=calculator(curInput); 
 					if (curInput[0]=='\0')//表达式正确性 
 						sprintf (str,"Please input the correct expression.");
-					else 
-					sprintf (str,"Result is %d .",res);	//计算结果 
-					putStrAndBackOnSht(calculatorSheet,8,28+16*curPosY,WHITE,BLACK,str,40);
+					else sprintf (str,"Result is %d.",res);	//计算结果 
+					putStrAndBackOnSht(calculatorSheet,8,28+16*curPosY,WHITE,BLACK,str,37);
 					//另起一行 
 					curInput[0]='>';
 					curInput[1]=' ';
 					curInput[2]='\0';
 					curPosX=2;
+					length=2;
 					curPosY++; 
 					break;
 				default:
@@ -307,7 +316,7 @@ void calculatorTask_Main(struct Task *task)
 					break;
 			}
 			sprintf (str,"%s",curInput);
-			putStrAndBackOnSht(calculatorSheet,8,28+16*curPosY,WHITE,BLACK,str,40);
+			putStrAndBackOnSht(calculatorSheet,8,28+16*curPosY,WHITE,BLACK,str,37);
 		}
 		if (getBuffer(&task->bufAll.mouse,&data))
 		{
@@ -322,7 +331,8 @@ void calculatorTask_Main(struct Task *task)
 				//右键关闭
 				case 2:
 					freeSheet(calculatorSheet);
-					freeMem_4k((unsigned int)calculatorBuffer,512*310);
+					freeMem((unsigned int)curInput,20);
+					freeMem((unsigned int)calculatorBuffer,312*210);
 					deleteWindow(task);
 					deleteTask(task);
 			}

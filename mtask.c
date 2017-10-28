@@ -11,7 +11,7 @@ void initTaskCTL()
 {
 	int i=0;
 	struct Segment_Descriptor *gdt=(struct Segment_Descriptor *)ADR_GDT;
-	taskctl=(struct TaskCTL *)allocMem_4k(sizeof (struct TaskCTL));
+	taskctl=(struct TaskCTL *)allocMem_4k(sizeof (struct TaskCTL),"Task List");
 	for (i=0;i<MAX_TASKS;i++) 
 	{
 		taskctl->tasks0[i].flags=TASK_UNALLOCED;
@@ -66,9 +66,11 @@ struct Task *allocTask()
 	}
 	return 0;
 }
-void initTask(struct Task *task,int eip)//,unsigned char *keyb,unsigned char *mouseb)
+void initTask(struct Task *task,int eip,char *s,int f)//,unsigned char *keyb,unsigned char *mouseb)
 {
-	task->tss.esp=allocMem_4k(64*1024)+64*1024-8;//栈底指针为内存的末尾·为了让地址不超过范围：sht_back为esp+4到esp+8 
+	char str[30];
+	sprintf (str,"%s PCB",s);
+	task->tss.esp=allocMem_4k(64*1024,str)+64*1024-8;//栈底指针为内存的末尾·为了让地址不超过范围：sht_back为esp+4到esp+8 
 	task->tss.eip=eip;
 	task->tss.es=1*8;
 	task->tss.cs=2*8;
@@ -82,10 +84,18 @@ void initTask(struct Task *task,int eip)//,unsigned char *keyb,unsigned char *mo
 	task->winID=window.winCount;
 	
 	//键盘鼠标缓冲区
-	unsigned char *keyb=(unsigned char *)allocMem(32);
-	unsigned char *mouseb=(unsigned char *)allocMem(1024);
-	initBuffer(&task->bufAll.key,32,keyb);
-	initBuffer(&task->bufAll.mouse,1024,mouseb);  
+	if (f>=10)
+	{
+		sprintf (str,"%s Communication Buffer",s);
+		unsigned char *keyb=(unsigned char *)allocMem(32,str);
+		initBuffer(&task->bufAll.key,32,keyb);
+	}
+	if (f%10==1)	
+	{
+		sprintf (str,"%s Operation Buffer",s);
+		unsigned char *mouseb=(unsigned char *)allocMem(1024,str);
+		initBuffer(&task->bufAll.mouse,1024,mouseb);  
+	}
 
 }
 void runTask(struct Task *task)
@@ -150,15 +160,17 @@ void initWindow()
 }
 void createWindow(struct Task *task,char *name)
 {
+	io_cli();
 	sprintf (window.winName[window.winCount],"%s",name);	
 	window.focus=window.winCount;
 	window.winCount++;
 	window.isChanged=1;
-	
+	io_sti();
 }
 void deleteWindow(struct Task *task)
 {
 	int i;
+	io_cli();
 	//关闭窗口，切换焦点
 	window.winCount--;
 	for (i=task->winID;i<window.winCount;i++) 
@@ -168,4 +180,5 @@ void deleteWindow(struct Task *task)
 			taskctl->tasks[i]->winID--;
 	window.focus=0;
 	window.isChanged=1;
+	io_sti();
 }

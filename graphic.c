@@ -2,6 +2,7 @@
 #include"memory.h"
 #include"sheet.h"
 #include"graphic.h"
+#include<stdio.h>
 void boxfillOnSht(struct Sheet *sht,int x0,int y0,int pxsize,int pysize,unsigned char c)
 {
 	int i,j;
@@ -202,10 +203,15 @@ void makeWindow(struct Sheet *sht,int xsize,int ysize,char *title)
 	boxfillOnSht(sht, 1,         1,         1,        	ysize - 2, 	WHITE);
 	boxfillOnSht(sht, xsize - 2, 1,         1,		 	ysize - 2, 	DULLGRAY);
 	boxfillOnSht(sht, xsize - 1, 0,         1, 			ysize, 		BLACK);
-	boxfillOnSht(sht, 2,         2,         xsize - 4, 	ysize - 4, 	WHITE);
-	boxfillOnSht(sht, 3,         3,         xsize - 6, 	18, 		DULLINDIGO);
+	//if (title[11]=='2'){struct BootInfo *binfo=(struct BootInfo *) 0x00000ff0;char s[128];sprintf (s,"b21");putStrOnSrn(binfo,0,320,1,s);}
+	boxfillOnSht(sht, 2,         2,         xsize - 4, 	ysize - 4, 	WHITE);//£¡ 
+	//if (title[11]=='2'){struct BootInfo *binfo=(struct BootInfo *) 0x00000ff0;char s[128];sprintf (s,"b22");putStrOnSrn(binfo,0,340,1,s);}
+	boxfillOnSht(sht, 3,         3,         xsize - 6, 	18, 		DULLINDIGO);//£¡ 
+	//if (title[11]=='2'){struct BootInfo *binfo=(struct BootInfo *) 0x00000ff0;char s[128];sprintf (s,"b27");putStrOnSrn(binfo,0,360,1,s);}
 	boxfillOnSht(sht, 1,         ysize - 2, xsize - 2, 	1, 			DULLGRAY);
+	//if (title[11]=='2'){struct BootInfo *binfo=(struct BootInfo *) 0x00000ff0;char s[128];sprintf (s,"b29");putStrOnSrn(binfo,0,380,1,s);}
 	boxfillOnSht(sht, 0,         ysize - 1, xsize, 		1,	 		BLACK);
+	//if (title[11]=='2'){struct BootInfo *binfo=(struct BootInfo *) 0x00000ff0;char s[128];sprintf (s,"b3");putStrOnSrn(binfo,0,400,1,s);}
 	putStrOnSht(sht,16, 4, WHITE, title);
 	for (y = 0; y < 14; y++) 
 	{

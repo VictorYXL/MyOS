@@ -30,10 +30,9 @@ struct TaskCTL
 };
 struct Window
 {
-	int focus,a;
-	int winCount,b;
-	char winName[MAXWINDOWCOUNT][MAXWINDOWNAME],c;
-	int isChanged,d;
+	int focus,winCount,x;
+	char winName[MAXWINDOWCOUNT][MAXWINDOWNAME];
+	int isChanged;
 };
 extern struct TaskCTL *taskctl;
 extern struct Timer *taskTimer;
@@ -41,7 +40,7 @@ extern struct Window window;
 struct Task *getMainTask();
 struct Task *allocTask();
 void initTaskCTL();
-void initTask(struct Task *task,int eip);//,unsigned char *keyb,unsigned char *mouseb);
+void initTask(struct Task *task,int eip,char *str,int f);//,unsigned char *keyb,unsigned char *mouseb);
 void runTask(struct Task *task);
 struct Task *getMainTask(); 
 void switchTask();

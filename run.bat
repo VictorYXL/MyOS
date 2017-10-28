@@ -21,6 +21,7 @@ gcc timer.c -c
 gcc mtask.c -c
 gcc console.c -c
 gcc calculator.c -c
+gcc memoryList.c -c 
 
 move main.o obj\main.obj
 move graphic.o obj\graphic.obj
@@ -35,8 +36,9 @@ move timer.o obj\timer.obj
 move mtask.o obj\mtask.obj
 move console.o obj\console.obj
 move calculator.o obj\calculator.obj
+move memoryList.o obj\memoryList.obj
 
-obj2bim @source\obj2bim.rul out:obj\main.bim stack:3136k map:obj\main.map obj\main.obj obj\graphic.obj obj\nasmfunc.obj obj\fontlib.obj obj\dsctbl.obj obj\int.obj obj\buffer.obj obj\keyboard.obj obj\mouse.obj obj\memory.obj obj\sheet.obj obj\timer.obj obj\mtask.obj obj\console.obj obj\calculator.obj
+obj2bim @source\obj2bim.rul out:obj\main.bim stack:3136k map:obj\main.map obj\main.obj obj\graphic.obj obj\nasmfunc.obj obj\fontlib.obj obj\dsctbl.obj obj\int.obj obj\buffer.obj obj\keyboard.obj obj\mouse.obj obj\memory.obj obj\sheet.obj obj\timer.obj obj\mtask.obj obj\console.obj obj\calculator.obj obj\memoryList.obj
 bim2hrb obj\main.bim obj\main.hrb 0
 copy /B obj\entry.bin+obj\main.hrb obj\MyOS.sys
 

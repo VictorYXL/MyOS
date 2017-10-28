@@ -9,6 +9,7 @@
 #include"mouse.h" 
 #include"console.h"
 #include"calculator.h" 
+#include"memorylist.h"
 #include<stdio.h>
 #include<string.h>
 //将字符串解析成命令 
@@ -69,35 +70,41 @@ void consoleTask_Main(struct Task *task)
 
 	//显示窗口
 	struct Sheet *consoleSheet;
-	unsigned char *windowBuffer;
+	unsigned char *consoleBuffer;
 	consoleSheet=allocSheet();
-	windowBuffer=(unsigned char *)allocMem_4k(200*68);//申请内存空间 
-	setBufInSheet(consoleSheet,windowBuffer,200,68,-1);
+	consoleBuffer=(unsigned char *)allocMem_4k(200*68,"Console UI");//申请内存空间 
+	setBufInSheet(consoleSheet,consoleBuffer,200,68,-1);
 	makeWindow(consoleSheet,200,68,"Console");
 	putStrOnSht(consoleSheet,16+0*8,28+0*16,BLACK,"Welcome to YangXL OS!");
-	slideSheet(consoleSheet,280,72);
-	setHeightSheet(consoleSheet,254);
-	while(1);
+	slideSheet(consoleSheet,180,72);
+	updownSheet(consoleSheet,task->winID+1);
+	
 	//输入的信息 
 	char curInput[128];
 	int curPosX=0,length=0;//光标 
 	unsigned char data;
 	struct Command command;//命令 
 	char str[128];
-	int flag=0;
+	int flag=0,f1=0;
+	int t=0;
 	while (1)
 	{
 		flag=0; 
 		if (window.focus!=task->winID)//焦点不在，取消光标 
 		{
-			boxfillOnSht(consoleSheet,16+8*curPosX,44,8,15,WHITE);
-			refreshSubInSheet(consoleSheet,16+8*curPosX,44,8,15); 
+			if (f1==0)
+			{
+				boxfillOnSht(consoleSheet,16+8*curPosX,44,8,15,WHITE);
+				refreshSubInSheet(consoleSheet,16+8*curPosX,44,8,15); 
+				f1=1;
+			}
 			continue;
 		}else if (timerCur->flag==TIMER_ALLOCED)//重新获得焦点，重启光标 
 		{
 			initTimer(timerCur,&bufferTime,1);
 			setTimer(timerCur,50);
 		}
+		f1=0;
 		io_cli();
 		//检查鼠标键盘事件 
 		if (getBuffer(&task->bufAll.key,&data))
@@ -137,9 +144,20 @@ void consoleTask_Main(struct Task *task)
 							//运行calculator任务
 							struct Task *calculatorTask; 
 							calculatorTask=allocTask();		
-							initTask(calculatorTask,(int)&calculatorTask_Main);
+							initTask(calculatorTask,(int)&calculatorTask_Main,"Calculator",11);
 							createWindow(calculatorTask,"Calculator");
 							runTask(calculatorTask);
+							//sprintf (str,"%d",calculatorTask->winID);
+							//putStrAndBackOnSht(consoleSheet,16,28,BLACK,WHITE,str,22);
+							break;
+						}
+						case MemoryList:
+						{
+							struct Task *memoryListTask; 
+							memoryListTask=allocTask();		
+							initTask(memoryListTask,(int)&memoryListTask_Main,"MemoryList",1);
+							createWindow(memoryListTask,"Memory List");
+							runTask(memoryListTask);
 							break;
 						}
 					}
