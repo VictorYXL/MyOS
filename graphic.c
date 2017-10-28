@@ -30,11 +30,11 @@ void putstr_sht(struct Sheet *sht,int x,int y,char color,char *str)
 		t++;
 	}
 }
-void putstr_back_sht(struct SheetControl *scl,struct Sheet *sht,int x,int y,int color,int backcolor,char *str,int length)
+void putstr_back_sht(struct Sheet *sht,int x,int y,int color,int backcolor,char *str,int length)
 {
 	boxfill_sht(sht,x,y,length*8,16,backcolor);
 	putstr_sht(sht,x,y,color,str);
-	sheet_refreshSheetSub(scl,sht,x,y,length*8,16);
+	sheet_refreshSheetSub(sht,x,y,length*8,16);
 }
 void init_mouse_cursor(struct Sheet *sht)
 {

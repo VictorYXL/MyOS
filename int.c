@@ -1,7 +1,8 @@
 #include"nasmfunc.h"
 #include"buffer.h"
-#include"int.h"
 #include"timer.h" 
+#include"int.h"
+#include"mtask.h"
 #include<stdio.h>
 /*
 PIC是可编程中断控制器 有两个PIC（主，从）每个PIC有8路IRQ（中断请求） 
@@ -31,14 +32,14 @@ void init_pic(void)
 	
 	io_out8(PIC0_IMR,0xfb);	//11111011 PIC1以外 全部禁止 
 	io_out8(PIC1_IMR,0xff);	//11111111 禁止所有中断
-
 	return; 	 
 }
+
 //定时器中断处理程序 
 void inthandler20(int *esp)
 {
-	int i;
-	
+	int i;			
+	char ts=0;//任务切换的标志 
 	//通知PIC中断已经接受 
 	//定时器中断是IRQ0
 	io_out8(PIC0_OCW2,0x60);
@@ -55,10 +56,15 @@ void inthandler20(int *esp)
 			if (timerctl.count>=timerctl.timer[i].timeout) 
 			{
 				timerctl.timer[i].flag=TIMER_ALLOCED;
-				buffer_put(timerctl.timer[i].timeoutBuffer,timerctl.timer[i].timeoutData);
+				//任务切换的程序 
+				if (taskTimer==&timerctl.timer[i])//任务切换定时器 
+					ts=1; 
+				else buffer_put(timerctl.timer[i].timeoutBuffer,timerctl.timer[i].timeoutData);//其他定时器 
 			}else if (timerctl.timer[i].timeout<timerctl.next)
 					timerctl.next=timerctl.timer[i].timeout;
 		}
+		if (ts!=0)
+			switchTask();
 	}
 	return;
 } 

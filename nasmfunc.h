@@ -23,5 +23,7 @@ void nsm_inthandler20(void);
 void nsm_inthandler21(void);
 void nsm_inthandler27(void);
 void nsm_inthandler2c(void);
+void load_tr(int);
 int load_cr0(void);
 void store_cr0(int cr0);
+void farjmp(int eip,int cs);

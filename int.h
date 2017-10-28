@@ -21,4 +21,6 @@ void inthandler2c(int *esp);
 
 extern struct BufferAll allbuf;
 extern struct TimerCTL timerctl;
+extern struct Timer *taskTimer;
+//extern int mt_tr; 
 //extern struct Buffer keyb;

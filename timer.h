@@ -20,6 +20,7 @@ struct TimerCTL
 	struct Timer timer[TIMER_MAX];
 }; 
 extern struct TimerCTL timerctl;
+extern struct Timer *taskTimer;
 void initPit();
 struct Timer *allocTimer();
 void freeTimer(struct Timer *timer);

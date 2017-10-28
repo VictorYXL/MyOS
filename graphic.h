@@ -18,6 +18,7 @@
 
 extern struct BootInfo *binfo;
 extern char fontlib[4096];
+extern struct SheetControl *scl;
 void init_palette();
 void set_palette();
 void boxfill_sht(struct Sheet *sht,int x0,int y0,int pxsize,int pysize,unsigned char c);
@@ -28,5 +29,5 @@ void putstr_sht(struct Sheet *sht,int x,int y,char color,char *str);
 void init_mouse_cursor(struct Sheet *sht);
 void putfont8_srn(struct BootInfo *binfo,int x,int y,char color,char c);
 void putstr_srn(struct BootInfo *binof,int x,int y,char color,char *str);
-void putstr_back_sht(struct SheetControl *scl,struct Sheet *sht,int x,int y,int color,int backcolor,char *str,int length);
+void putstr_back_sht(struct Sheet *sht,int x,int y,int color,int backcolor,char *str,int length);
 void make_window(struct Sheet *sht,int xsize,int ysize,char *title);

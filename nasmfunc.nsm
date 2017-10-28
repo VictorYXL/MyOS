@@ -7,9 +7,10 @@
 GLOBAL	_io_hlt,_write_mem8,_io_cli,_io_sti,_io_stihlt
 GLOBAL	_io_in8,_io_in16,_io_in32,_io_out8,_io_out16,_io_out32
 GLOBAL  _io_load_eflags,_io_store_eflags
-GLOBAL 	_load_gdtr,_load_idtr
+GLOBAL 	_load_gdtr,_load_idtr,_load_tr
 GLOBAL	_nsm_inthandler20,_nsm_inthandler21,_nsm_inthandler27,_nsm_inthandler2c
 GLOBAL	_load_cr0,_store_cr0
+GLOBAL	_farjmp 
 	
 EXTERN	_inthandler20,_inthandler21,_inthandler27,_inthandler2c
 
@@ -98,6 +99,11 @@ MOV [ESP+6],AX
 LIDT [ESP+6]
 RET
 
+;修改tr，tr记录当前正在执行的任务 
+_load_tr:						
+	LTR	[ESP+4]
+	RET
+	
 _nsm_inthandler20:
 ;保护现场 
 PUSH ES
@@ -184,7 +190,7 @@ POP DS
 POP ES
 
 IRETD
-	
+
 _load_cr0:						;int load_cr0(void)
 MOV EAX,CR0;
 RET
@@ -193,3 +199,9 @@ _store_cr0:						;store_cr0(int cr0)
 MOV EAX,[ESP+4]
 MOV CR0,EAX
 RET
+
+;切换任务，一般的跳转为near模式，不改变CS；far模式跳转改变CS，切换任务 
+_farjmp:						 ;连续读取6个字节前4个写入EIP寄存器，后两个写入CS寄存器 
+	JMP	FAR[ESP+4] 
+	RET
+

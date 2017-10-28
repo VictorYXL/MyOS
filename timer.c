@@ -7,6 +7,8 @@
 向0x40写入设定值的低8位 
 向0x40写入设定值的高8位
 */
+struct TimerCTL timerctl;
+struct Timer *taskTimer;
 void initPit()
 {
 	io_out8(PIT_CTRL,0x34);

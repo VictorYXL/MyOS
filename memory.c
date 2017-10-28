@@ -4,7 +4,7 @@
 内存的管理使用空闲表法
 使用内存前先检查内存 
 */ 
-
+struct MemoryList *meml;
 unsigned int memtest(unsigned int start,unsigned int end)
 {
 	/*
@@ -63,12 +63,12 @@ unsigned int memtest_sub(unsigned int start,unsigned int end)
 	return i;
 }
 
-void mem_init(struct MemoryList *meml)
+void mem_init()
 {
 	meml->freesize=0;
 	meml->maxfreesize=0;
 }
-unsigned int mem_freetotal(struct MemoryList *meml)
+unsigned int mem_freetotal()
 {
 	int i,t=0;
 	for (i=0;i<meml->maxfreesize;i++) 
@@ -76,7 +76,7 @@ unsigned int mem_freetotal(struct MemoryList *meml)
 	return t;
 }
 //分配空间 
-unsigned int mem_alloc(struct MemoryList *meml,unsigned int size)
+unsigned int mem_alloc(unsigned int size)
 {
 	
 	int i,a,j;
@@ -97,7 +97,7 @@ unsigned int mem_alloc(struct MemoryList *meml,unsigned int size)
 		}
 	}
 }
-int mem_free(struct MemoryList *meml,unsigned int addr,unsigned int size)
+int mem_free(unsigned int addr,unsigned int size)
 {
 	int i,j;
 	//获取待插入位置 
@@ -139,18 +139,18 @@ int mem_free(struct MemoryList *meml,unsigned int addr,unsigned int size)
 	return 0;
 }
 //一次申请4KB
-unsigned int mem_alloc_4k(struct MemoryList *meml,unsigned int size)
+unsigned int mem_alloc_4k(unsigned int size)
 {
 	unsigned int a;
 	size=(size+0xfff)&0xfffff000;
-	a=mem_alloc(meml,size);
+	a=mem_alloc(size);
 	return a;
 }
 //一次释放4KB
-int mem_free_4k(struct MemoryList *meml,unsigned int addr,unsigned int size)
+int mem_free_4k(unsigned int addr,unsigned int size)
 {
 	unsigned int a;
 	size=(size+0xfff)&0xfffff000;
-	a=mem_free(meml,addr,size);
+	a=mem_free(addr,size);
 	return a;
 }
